@@ -450,6 +450,32 @@
       cursor: pointer;
     }
 
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      background: rgba(0, 0, 0, .6);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #fff !important;
+      font-size: 20px;
+      font-weight: bold
+    }
+
+    .modal-poster {
+      width: 100%;
+      height: auto;
+      max-height: 50vh;
+      object-fit: contain;
+      background: #0a0f1c
+    }
+
     .modal-card {
       display: flex;
       flex-direction: column;
@@ -460,43 +486,7 @@
       color: #000;
       border-radius: 20px;
       position: relative;
-      scrollbar-width: thin;
-      margin-top: 20px;
-      /* 👈 Add this */
-    }
-
-    .close-modal {
-      position: absolute;
-      top: 15px;
-      /* 👈 Change from 10px to 15px */
-      right: 15px;
-      /* 👈 Change from 10px to 15px */
-      z-index: 10;
-      background: rgba(0, 0, 0, .6);
-      width: 35px;
-      /* 👈 Slightly larger */
-      height: 35px;
-      /* 👈 Slightly larger */
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: #fff !important;
-      font-size: 22px;
-      /* 👈 Slightly larger */
-      font-weight: bold;
-    }
-
-    .modal-poster {
-      width: 100%;
-      height: auto;
-      max-height: 45vh;
-      /* 👈 Change from 50vh to 45vh */
-      object-fit: contain;
-      background: #0a0f1c;
-      margin-top: 5px;
-      /* 👈 Add this */
+      scrollbar-width: thin
     }
 
     .language-container {
