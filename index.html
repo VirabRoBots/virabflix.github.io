@@ -508,6 +508,10 @@
       scrollbar-width: thin
     }
 
+    body.dark-mode .language-container {
+      background: #000;
+    }
+
     .lang-btn {
       padding: 8px 18px;
       border-radius: 40px;
@@ -1148,6 +1152,14 @@
       document.querySelectorAll('.bottomnav .menu').forEach(menu => {
         menu.addEventListener('click', () => {
           const nav = menu.getAttribute('data-nav');
+          // Request → handled separately (no toast)
+          if (nav === 'request') return;
+          // TV & Games → show coming soon
+          if (nav === 'tv' || nav === 'games') {
+            showToast('Coming Soon..!');
+            return;
+          }
+          // Home → normal behavior
           if (nav === 'home') {
             document.querySelectorAll('.bottomnav .menu').forEach(m => m.classList.remove('active-bar'));
             menu.classList.add('active-bar');
@@ -1156,12 +1168,6 @@
               behavior: 'smooth'
             });
           }
-          document.querySelectorAll('.bottomnav .menu').forEach(m => m.classList.remove('active-bar'));
-          menu.classList.add('active-bar');
-          window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-          });
         });
       });
       setTimeout(() => {
