@@ -489,6 +489,14 @@
       scrollbar-width: thin
     }
 
+    #languageModal .modal-card {
+      background: #fff
+    }
+
+    #languageModal .lang-movie-card .title {
+      color: #333
+    }
+
     .language-container {
       display: flex;
       gap: 10px;
@@ -497,7 +505,7 @@
       padding-right: 15px;
       padding-top: 10px;
       padding-bottom: 10px;
-      scrollbar-width: thin;
+      scrollbar-width: thin
     }
 
     .lang-btn {
@@ -509,7 +517,31 @@
       font-weight: 600;
       font-size: 13px;
       cursor: pointer;
-      white-space: nowrap;
+      white-space: nowrap
+    }
+
+    .language-movies-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 15px;
+      padding: 20px;
+      justify-items: center;
+      max-height: 60vh;
+      overflow-y: auto
+    }
+
+    .lang-movie-card {
+      text-align: center;
+      cursor: pointer;
+      width: 100%;
+      max-width: 100px
+    }
+
+    .lang-movie-card img {
+      width: 100%;
+      height: 150px;
+      border-radius: 8px;
+      object-fit: cover
     }
 
     .toast-message {
