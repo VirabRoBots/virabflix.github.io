@@ -1,18 +1,4 @@
 {
-  "banner": [
-    {
-      "title": "Funky",
-      "year": "2026",
-      "poster": "https://i.ibb.co/20KQsZ4N/x.jpg",
-      "genre": "Romance/Comedy"
-    },
-    {
-      "title": "With Love",
-      "year": "2026",
-      "poster": "https://i.ibb.co/d4JYzpvQ/x.jpg",
-      "genre": "Romance/Comedy"
-    }
-  ],
   "popular": [
     {
       "title": "Landlord",
@@ -27,9 +13,9 @@
       "released": "23 Jan 2026",
       "language": ["Kannada", "Tamil"],
       "quality": "HDRip",
-      "genres": ["#Action", "#Drama", "#Family"],
-      "streamLink": "#",
-      "telegramLink": "https://t.me/Cinemaniacs_Hub"
+      "genres": ["#Action", "🎭 #Drama", "👨‍👩‍👧‍👧 #Family"],
+      "streamLink": "https://friendly-lezlie-koyebuser123-d832ffa7.koyeb.app/watch/24/Landlord+%282026%29+Kannada+TRUE+WEB-DL+%231080p+-+AVC+-+%28DD%2B5.mkv?hash=AgADAi",
+      "telegramLink": "https://cinemaniacs-hub.vercel.app?BATCH-NTY"
     },
     {
       "title": "Ala Vaikunthapurramuloo",
@@ -44,7 +30,7 @@
       "released": "12 Jan 2020",
       "language": ["Telugu"],
       "quality": "HD",
-      "genres": ["#Action", "#Drama"],
+      "genres": ["#Action", "#Drama", "#Family"],
       "streamLink": "#",
       "telegramLink": "https://t.me/Cinemaniacs_Hub"
     },
@@ -114,11 +100,25 @@
       "duration": "6 Episodes",
       "director": "Rohit Shetty",
       "released": "2 Apr 2026",
-      "language": ["Hindi", "Tamil"],
+      "language": ["Hindi"],
       "quality": "4K",
       "genres": ["#Crime", "#Thriller"],
       "streamLink": "#",
       "telegramLink": "https://t.me/Cinemaniacs_Hub"
+    }
+  ],
+  "bannerSlides": [
+    {
+      "title": "Funky",
+      "year": "2026",
+      "poster": "https://i.ibb.co/20KQsZ4N/x.jpg",
+      "type": "Romance/Comedy"
+    },
+    {
+      "title": "With Love",
+      "year": "2026",
+      "poster": "https://i.ibb.co/d4JYzpvQ/x.jpg",
+      "type": "Romance/Comedy"
     }
   ]
 }
