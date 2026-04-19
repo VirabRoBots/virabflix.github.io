@@ -608,13 +608,6 @@
       color: #ccc;
     }
 
-    body.dark-mode .section-header h2 {
-      background: #fff;
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-    }
-
     body.dark-mode .lang-btn {
       background: linear-gradient(45deg, #e94560, #ff6b6b);
     }
@@ -748,7 +741,7 @@
   </div>
 
   <div id="movieModal" class="movie-modal">
-    <div class="modal-card"><img id="modalPoster" class="modal-poster"><div class="close-modal" id="closeModalBtn">✕</div><div class="modal-info"><h2 id="modalTitle"></h2><div id="modalYearText" class="year-text"></div><div class="meta"><span class="imdb">IMDB <b id="modalRating"></b></span><span id="modalAge"></span></div><div class="genres" id="modalGenres"></div><p id="modalPlot" class="plot-text"></p><span id="togglePlot" class="plot-toggle">Show More ▼</span><div class="extra-info"><p><b>Duration:</b> <span id="modalDuration"></span></p><p><b>Type:</b> <span id="modalType"></span></p><p><b>Director:</b> <span id="modalDirector"></span></p><p><b>Released:</b> <span id="modalRelease"></span></p><p><b>Language:</b> <span id="modalLanguage"></span></p><p><b>Quality:</b> <span id="modalQuality"></span></p></div></div><button id="streamBtn" style="margin:0 14px 12px 14px;width:calc(100% - 28px);padding:14px;border-radius:40px;background:linear-gradient(135deg,#ff416c,#ff4b2b);color:white;border:none;font-weight:bold;cursor:pointer;">🎬 Watch Now (Stream)</button><button id="telegramBtn">Get Telegram Files</button></div>
+    <div class="modal-card"><img id="modalPoster" class="modal-poster"><div class="close-modal" id="closeModalBtn">✕</div><div class="modal-info"><h2 id="modalTitle"></h2><div id="modalYearText" class="year-text"></div><div class="meta"><span class="imdb">IMDB <b id="modalRating"></b></span><span id="modalAge"></span></div><div class="genres" id="modalGenres"></div><p id="modalPlot" class="plot-text"></p><span id="togglePlot" class="plot-toggle">Show More ▼</span><div class="extra-info"><p><b>Duration:</b> <span id="modalDuration"></span></p><p><b>Type:</b> <span id="modalType"></span></p><p><b>Director:</b> <span id="modalDirector"></span></p><p><b>Released:</b> <span id="modalRelease"></span></p><p><b>Language:</b> <span id="modalLanguage"></span></p><p><b>Quality:</b> <span id="modalQuality"></span></p></div></div><button id="streamBtn" style="margin:0 14px 12px 14px;width:calc(100% - 28px);padding:14px;border-radius:40px;background:linear-gradient(135deg,#ff416c,#ff4b2b);color:white;border:none;font-weight:bold;cursor:pointer;">🎬 Watch Now (Stream)</button><button id="telegramBtn">📱 Get Telegram Files</button></div>
   </div>
 
   <script>
@@ -759,26 +752,85 @@
       bannerSlides: []
     };
 
+    // Helper function for toast notifications
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast-message';
+      toast.innerText = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2000);
+    }
+
+    // Loading function with 5-second delay
+    function showLoadingAndRedirect(link, buttonType) {
+      if (!link || link === '#') {
+        showToast(`${buttonType} link not available`);
+        return;
+      }
+      
+      const loadingDiv = document.createElement('div');
+      loadingDiv.id = 'loadingOverlay';
+      loadingDiv.innerHTML = `
+        <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:10001; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+          <div style="background:linear-gradient(45deg, #00c6ff, #0072ff); width:70px; height:70px; border-radius:50%; animation:pulse 1s ease-in-out infinite;"></div>
+          <p style="color:white; margin-top:25px; font-size:18px; font-weight:600;">Loading ${buttonType}...</p>
+          <p style="color:#aaa; margin-top:10px; font-size:14px;">Redirecting in <span id="countdown" style="color:#00c6ff; font-weight:bold; font-size:18px;">5</span> seconds</p>
+          <button id="cancelLoading" style="margin-top:30px; padding:8px 25px; border-radius:30px; border:none; background:#ff4757; color:white; cursor:pointer; font-weight:bold;">Cancel</button>
+        </div>
+        <style>
+          @keyframes pulse {
+            0% { transform:scale(0.8); opacity:0.5; box-shadow:0 0 0 0 rgba(0,114,255,0.7); }
+            70% { transform:scale(1.1); opacity:1; box-shadow:0 0 0 15px rgba(0,114,255,0); }
+            100% { transform:scale(0.8); opacity:0.5; box-shadow:0 0 0 0 rgba(0,114,255,0); }
+          }
+        </style>
+      `;
+      document.body.appendChild(loadingDiv);
+      
+      let seconds = 5;
+      let cancelled = false;
+      const countdownEl = document.getElementById('countdown');
+      
+      const timer = setInterval(() => {
+        if (cancelled) return;
+        seconds--;
+        if (countdownEl) countdownEl.innerText = seconds;
+        if (seconds <= 0) {
+          clearInterval(timer);
+          loadingDiv.remove();
+          window.open(link, '_blank');
+        }
+      }, 1000);
+      
+      const cancelBtn = document.getElementById('cancelLoading');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+          cancelled = true;
+          clearInterval(timer);
+          loadingDiv.remove();
+          showToast('Redirect cancelled');
+        });
+      }
+    }
+
+    // Load data from external movies.json file
     async function loadMovies() {
       try {
         const response = await fetch('movies.json');
-        if (!response.ok) throw new Error('Failed to load');
+        if (!response.ok) throw new Error('Failed to load movies.json');
         const data = await response.json();
         movieData = data;
         renderAll();
         initBanner();
+        // Re-initialize buttons after data loads
+        initTelegramButton();
+        initStreamButton();
       } catch (error) {
         console.error('Error loading movies.json:', error);
         document.getElementById('popularMovies').innerHTML = '<div style="padding:20px;text-align:center">⚠️ Failed to load movies.json. Make sure the file exists in the same folder.</div>';
         document.getElementById('upcomingMovies').innerHTML = '<div style="padding:20px;text-align:center">⚠️ Failed to load movies.json</div>';
         document.getElementById('webSeries').innerHTML = '<div style="padding:20px;text-align:center">⚠️ Failed to load movies.json</div>';
       }
-    }
-
-    function renderAll() {
-      renderSection('popularMovies', movieData.popular, false);
-      renderSection('upcomingMovies', movieData.upcoming, true);
-      renderSection('webSeries', movieData.webSeries, false);
     }
 
     function renderSection(containerId, items, isUpcoming) {
@@ -792,7 +844,7 @@
       items.forEach(item => {
         const card = document.createElement('div');
         card.className = isUpcoming ? 'upcoming-card' : 'card';
-        card.innerHTML = `<img src="${item.poster}" alt="${item.title}"><div class="title">${item.title}<br><span class="year">(${item.year})</span></div>`;
+        card.innerHTML = `<img src="${item.poster}" alt="${item.title}" onerror="this.src='https://via.placeholder.com/120x180?text=No+Image'"><div class="title">${item.title}<br><span class="year">(${item.year})</span></div>`;
         card.addEventListener('click', () => openModal(item));
         container.appendChild(card);
       });
@@ -838,7 +890,11 @@
       document.body.classList.remove('modal-open');
     }
 
-    let currentIndex = 0, autoInterval;
+    function renderAll() {
+      renderSection('popularMovies', movieData.popular, false);
+      renderSection('upcomingMovies', movieData.upcoming, true);
+      renderSection('webSeries', movieData.webSeries, false);
+    }
 
     function initBanner() {
       const container = document.getElementById('bannerSlide');
@@ -868,32 +924,36 @@
         dot.addEventListener('click', () => goToSlide(i));
         dotsContainer.appendChild(dot);
       });
+      let currentIndex = 0;
+      let autoInterval;
+      
       function updateDots() {
         const dots = document.querySelectorAll('.banner-dot');
         let realIdx = ((currentIndex % total) + total) % total;
         dots.forEach((dot, i) => { if(i === realIdx) dot.classList.add('active'); else dot.classList.remove('active'); });
       }
+      
       function goToSlide(idx) { currentIndex = idx; container.style.transition = 'transform 0.6s ease'; container.style.transform = `translateX(-${(currentIndex+1)*100}%)`; updateDots(); }
       function next() { currentIndex++; container.style.transition = 'transform 0.6s ease'; container.style.transform = `translateX(-${(currentIndex+1)*100}%)`; }
       function prev() { currentIndex--; container.style.transition = 'transform 0.6s ease'; container.style.transform = `translateX(-${(currentIndex+1)*100}%)`; }
       function resetTimer() { if(autoInterval) clearInterval(autoInterval); autoInterval = setInterval(() => next(), 4000); }
+      
       container.addEventListener('transitionend', () => {
         if(currentIndex >= total) { container.style.transition = 'none'; currentIndex = 0; container.style.transform = 'translateX(-100%)'; updateDots(); }
         else if(currentIndex < 0) { container.style.transition = 'none'; currentIndex = total-1; container.style.transform = `translateX(-${(currentIndex+1)*100}%)`; updateDots(); }
         updateDots();
       });
+      
       document.getElementById('arrowLeft')?.addEventListener('click', () => { prev(); resetTimer(); });
       document.getElementById('arrowRight')?.addEventListener('click', () => { next(); resetTimer(); });
       resetTimer();
+      
       document.querySelectorAll('.banner-watch-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           const title = btn.dataset.title;
-          const poster = btn.dataset.poster;
-          const year = btn.dataset.year;
           let found = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries].find(m => m.title === title);
-          if(!found) found = { title, year, poster, type:"Movie", rating:"N/A", age:"U/A", plot:"", duration:"N/A", director:"TBA", released:year, quality:"HD", genres:[], telegramLink:"#" };
-          openModal(found);
+          if(found) openModal(found);
         });
       });
     }
@@ -913,7 +973,7 @@
         if(matches.length === 0) { searchGrid.innerHTML = '<div class="no-results">No matching movies or series found</div>'; return; }
         matches.forEach(m => {
           const card = document.createElement('div'); card.className = 'search-result-card';
-          card.innerHTML = `<img src="${m.poster}"><div class="title">${m.title}<br><span class="year">(${m.year})</span></div>`;
+          card.innerHTML = `<img src="${m.poster}" onerror="this.src='https://via.placeholder.com/120x180?text=No+Image'"><div class="title">${m.title}<br><span class="year">(${m.year})</span></div>`;
           card.addEventListener('click', () => openModal(m));
           searchGrid.appendChild(card);
         });
@@ -937,7 +997,7 @@
           if(filtered.length === 0) { container.innerHTML = '<div style="padding:20px;text-align:center">No movies available</div>'; return; }
           filtered.forEach(m => {
             const card = document.createElement('div'); card.className = 'lang-movie-card';
-            card.innerHTML = `<img src="${m.poster}"><div class="title">${m.title}<br><span class="year">(${m.year})</span></div>`;
+            card.innerHTML = `<img src="${m.poster}" onerror="this.src='https://via.placeholder.com/100x150?text=No+Image'"><div class="title">${m.title}<br><span class="year">(${m.year})</span></div>`;
             card.addEventListener('click', () => openModal(m));
             container.appendChild(card);
           });
@@ -970,11 +1030,7 @@
       document.querySelectorAll('.bottomnav .menu').forEach(menu => {
         menu.addEventListener('click', () => {
           if(menu.getAttribute('data-nav') !== 'home') {
-            const toast = document.createElement('div');
-            toast.className = 'toast-message';
-            toast.innerText = 'Coming Soon..!';
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2000);
+            showToast('Coming Soon..!');
             return;
           }
           document.querySelectorAll('.bottomnav .menu').forEach(m => m.classList.remove('active-bar'));
@@ -986,76 +1042,35 @@
         document.querySelector('.bottomnav .menu[data-nav="home"]')?.classList.add('active-bar');
       }, 100);
     }
-    function showToast(message) {
-      const toast = document.createElement('div');
-      toast.className = 'toast-message';
-      toast.innerText = message;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 2000);
-    }
-    function showLoadingAndRedirect(link, buttonType) {
-      if (!link || link === '#') {
-        showToast(`${buttonType} link not available`);
-        return;
-      }
-      const loadingDiv = document.createElement('div');
-      loadingDiv.id = 'loadingOverlay';
-      loadingDiv.innerHTML = `
-        <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:10001; display:flex; align-items:center; justify-content:center; flex-direction:column;">
-          <div style="background:linear-gradient(45deg, #00c6ff, #0072ff); width:70px; height:70px; border-radius:50%; animation:pulse 1s ease-in-out infinite;"></div>
-          <p style="color:white; margin-top:25px; font-size:18px; font-weight:600;">Loading ${buttonType}...</p>
-          <p style="color:#aaa; margin-top:10px; font-size:14px;">Redirecting in <span id="countdown" style="color:#00c6ff; font-weight:bold; font-size:18px;">5</span> seconds</p>
-          <button id="cancelLoading" style="margin-top:30px; padding:8px 25px; border-radius:30px; border:none; background:#ff4757; color:white; cursor:pointer; font-weight:bold;">Cancel</button>
-        </div>
-        <style>
-          @keyframes pulse {
-            0% { transform:scale(0.8); opacity:0.5; box-shadow:0 0 0 0 rgba(0,114,255,0.7); }
-            70% { transform:scale(1.1); opacity:1; box-shadow:0 0 0 15px rgba(0,114,255,0); }
-            100% { transform:scale(0.8); opacity:0.5; box-shadow:0 0 0 0 rgba(0,114,255,0); }
-          }
-        </style>
-      `;
-      document.body.appendChild(loadingDiv);
-      let seconds = 5;
-      let cancelled = false;
-      const countdownEl = document.getElementById('countdown');
-      const timer = setInterval(() => {
-        if (cancelled) return;
-        seconds--;
-        if (countdownEl) countdownEl.innerText = seconds;
-        if (seconds <= 0) {
-          clearInterval(timer);
-          loadingDiv.remove();
-          window.open(link, '_blank');
-        }
-      }, 1000);
-      
-      const cancelBtn = document.getElementById('cancelLoading');
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', () => {
-        cancelled = true;
-        clearInterval(timer);
-        loadingDiv.remove();
-        showToast('Redirect cancelled');
-      });
-    }
-  }
+
+    // Updated Telegram button
     function initTelegramButton() {
-      document.getElementById('telegramBtn').addEventListener('click', () => {
-        const link = document.getElementById('telegramBtn').getAttribute('data-telegram-link') || '#';
-        showLoadingAndRedirect(link, 'Telegram Files');
-      });
+      const telegramBtn = document.getElementById('telegramBtn');
+      if (telegramBtn) {
+        // Remove existing listeners to avoid duplicates
+        const newBtn = telegramBtn.cloneNode(true);
+        telegramBtn.parentNode.replaceChild(newBtn, telegramBtn);
+        newBtn.addEventListener('click', () => {
+          const link = newBtn.getAttribute('data-telegram-link') || '#';
+          showLoadingAndRedirect(link, 'Telegram Files');
+        });
+        document.getElementById('telegramBtn');
+      }
     }
-    
+
+    // Updated Stream button
     function initStreamButton() {
-    const streamBtn = document.getElementById('streamBtn');
+      const streamBtn = document.getElementById('streamBtn');
       if (streamBtn) {
-        streamBtn.addEventListener('click', () => {
-          const link = streamBtn.getAttribute('data-stream-link') || '#';
+        const newBtn = streamBtn.cloneNode(true);
+        streamBtn.parentNode.replaceChild(newBtn, streamBtn);
+        newBtn.addEventListener('click', () => {
+          const link = newBtn.getAttribute('data-stream-link') || '#';
           showLoadingAndRedirect(link, 'Stream');
-      });
-     }
+        });
+      }
     }
+
     function initTheme() {
       const btn = document.getElementById('themeToggle');
       const body = document.body;
@@ -1075,7 +1090,6 @@
     initLanguageFilter();
     initMoreButtons();
     initBottomNav();
-    initButtons();
     initTheme();
   </script>
 </body>
