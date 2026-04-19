@@ -765,20 +765,40 @@
         movieData = data;
         renderAll();
         initBanner();
-        
-        // FIX: Banner Watch Now button listeners - added after data loads
+      
         setTimeout(() => {
           document.querySelectorAll('.banner-watch-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
               e.stopPropagation();
               const title = btn.getAttribute('data-title');
-              const allMovies = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
-              const found = allMovies.find(m => m.title === title);
-              if (found) {
-                openModal(found);
-              } else {
-                showToast('Movie details not found');
+      // First try to find in popular/upcoming/webSeries
+              let found = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries].find(m => m.title === title);
+      
+      // If not found, create from banner data
+              if (!found) {
+                const bannerSlide = movieData.bannerSlides.find(s => s.title === title);
+                if (bannerSlide) {
+                  found = {
+                    title: bannerSlide.title,
+                    year: bannerSlide.year,
+                    poster: bannerSlide.poster,
+                    type: bannerSlide.type,
+                    rating: "N/A",
+                    age: "U/A",
+                    plot: "No description available",
+                    duration: "N/A",
+                    director: "TBA",
+                    released: bannerSlide.year,
+                    language: ["Multiple"],
+                    quality: "HD",
+                    genres: [],
+                    streamLink: "#",
+                    telegramLink: "#"
+                  };
+                }
               }
+              if (found) openModal(found);
+              else showToast('Movie not found');
             });
           });
         }, 200);
