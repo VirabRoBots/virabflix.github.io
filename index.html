@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -250,14 +251,16 @@
       height: 4px;
     }
 
-    .card, .upcoming-card {
+    .card,
+    .upcoming-card {
       flex-shrink: 0;
       text-align: center;
       cursor: pointer;
       transition: transform .2s;
     }
 
-    .card img, .upcoming-card img {
+    .card img,
+    .upcoming-card img {
       width: 120px;
       height: 180px;
       border-radius: 8px;
@@ -359,19 +362,6 @@
       overflow: hidden;
     }
 
-    .modal-card {
-      display: flex;
-      flex-direction: column;
-      max-height: 90vh;
-      overflow-y: auto;
-      width: min(400px, 92vw);
-      background: #fff;
-      color: #000;
-      border-radius: 20px;
-      position: relative;
-      scrollbar-width: thin;
-    }
-
     .modal-card::-webkit-scrollbar {
       width: 6px;
     }
@@ -384,14 +374,6 @@
     .modal-card::-webkit-scrollbar-thumb {
       background: linear-gradient(135deg, #00c6ff, #0072ff);
       border-radius: 10px;
-    }
-
-    .modal-poster {
-      width: 100%;
-      height: auto;
-      max-height: 50vh;
-      object-fit: contain;
-      background: #0a0f1c;
     }
 
     .modal-info {
@@ -468,22 +450,53 @@
       cursor: pointer;
     }
 
+    .modal-card {
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+      overflow-y: auto;
+      width: min(400px, 92vw);
+      background: #fff;
+      color: #000;
+      border-radius: 20px;
+      position: relative;
+      scrollbar-width: thin;
+      margin-top: 20px;
+      /* 👈 Add this */
+    }
+
     .close-modal {
       position: absolute;
-      top: 10px;
-      right: 10px;
+      top: 15px;
+      /* 👈 Change from 10px to 15px */
+      right: 15px;
+      /* 👈 Change from 10px to 15px */
       z-index: 10;
       background: rgba(0, 0, 0, .6);
-      width: 32px;
-      height: 32px;
+      width: 35px;
+      /* 👈 Slightly larger */
+      height: 35px;
+      /* 👈 Slightly larger */
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       color: #fff !important;
-      font-size: 20px;
+      font-size: 22px;
+      /* 👈 Slightly larger */
       font-weight: bold;
+    }
+
+    .modal-poster {
+      width: 100%;
+      height: auto;
+      max-height: 45vh;
+      /* 👈 Change from 50vh to 45vh */
+      object-fit: contain;
+      background: #0a0f1c;
+      margin-top: 5px;
+      /* 👈 Add this */
     }
 
     .language-container {
@@ -532,6 +545,7 @@
         opacity: 0;
         transform: translateX(50px);
       }
+
       to {
         opacity: 1;
         transform: translateX(0);
@@ -618,20 +632,26 @@
       .banner-container {
         border-radius: 15px;
       }
+
       .banner-item {
         border-radius: 15px;
         height: 180px;
       }
-      .card img, .upcoming-card img {
+
+      .card img,
+      .upcoming-card img {
         width: 100px;
         height: 150px;
       }
+
       #searchInput {
         width: 130px;
       }
+
       .search-result-card {
         width: 100px;
       }
+
       .search-result-card img {
         width: 100px;
         height: 150px;
@@ -639,6 +659,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="header">
     <div class="logo-container">
@@ -658,9 +679,13 @@
       <div class="arrow arrow-left" id="arrowLeft">&#10094;</div>
       <div class="arrow arrow-right" id="arrowRight">&#10095;</div>
     </div>
-    <div class="section-header"><h2>| Watch Popular Movies</h2><span class="more-btn" data-target="popularMovies">+ More</span></div>
+    <div class="section-header">
+      <h2>| Watch Popular Movies</h2><span class="more-btn" data-target="popularMovies">+ More</span>
+    </div>
     <div class="movies" id="popularMovies"></div>
-    <div class="section-header"><h2>| Select Language</h2></div>
+    <div class="section-header">
+      <h2>| Select Language</h2>
+    </div>
     <div class="language-container">
       <button class="lang-btn" data-lang="hindi">Hindi</button>
       <button class="lang-btn" data-lang="english">English</button>
@@ -670,15 +695,26 @@
       <button class="lang-btn" data-lang="kannada">Kannada</button>
     </div>
     <div id="languageModal" class="movie-modal">
-      <div class="modal-card"><div class="close-modal" id="closeLangModal">✕</div><h2 id="langModalTitle" style="text-align:center;padding:25px 20px 10px;">Movies</h2><div id="languageMoviesList" style="display:flex;flex-wrap:wrap;gap:15px;padding:20px;justify-content:center;max-height:60vh;overflow-y:auto;"></div></div>
+      <div class="modal-card">
+        <div class="close-modal" id="closeLangModal">✕</div>
+        <h2 id="langModalTitle" style="text-align:center;padding:25px 20px 10px;">Movies</h2>
+        <div id="languageMoviesList" style="display:flex;flex-wrap:wrap;gap:15px;padding:20px;justify-content:center;max-height:60vh;overflow-y:auto;"></div>
+      </div>
     </div>
-    <div class="section-header"><h2>| Upcoming Movies</h2><span class="more-btn" data-target="upcomingMovies">+ More</span></div>
+    <div class="section-header">
+      <h2>| Upcoming Movies</h2><span class="more-btn" data-target="upcomingMovies">+ More</span>
+    </div>
     <div class="movies" id="upcomingMovies"></div>
-    <div class="section-header"><h2>| Popular WebSeries</h2><span class="more-btn" data-target="webSeries">+ More</span></div>
+    <div class="section-header">
+      <h2>| Popular WebSeries</h2><span class="more-btn" data-target="webSeries">+ More</span>
+    </div>
     <div class="movies" id="webSeries"></div>
   </div>
 
-  <div id="searchResultsContainer"><h3>Search Results</h3><div id="searchResultsGrid" class="search-results-grid"></div></div>
+  <div id="searchResultsContainer">
+    <h3>Search Results</h3>
+    <div id="searchResultsGrid" class="search-results-grid"></div>
+  </div>
 
   <div class="bottomnav">
     <div class="menu" data-nav="home"><img src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="home"></div>
@@ -687,7 +723,24 @@
   </div>
 
   <div id="movieModal" class="movie-modal">
-    <div class="modal-card"><img id="modalPoster" class="modal-poster"><div class="close-modal" id="closeModalBtn">✕</div><div class="modal-info"><h2 id="modalTitle"></h2><div id="modalYearText" class="year-text"></div><div class="meta"><span class="imdb">IMDB <b id="modalRating"></b></span><span id="modalAge"></span></div><div class="genres" id="modalGenres"></div><p id="modalPlot" class="plot-text"></p><span id="togglePlot" class="plot-toggle">Show More ▼</span><div class="extra-info"><p><b>Duration:</b> <span id="modalDuration"></span></p><p><b>Type:</b> <span id="modalType"></span></p><p><b>Director:</b> <span id="modalDirector"></span></p><p><b>Released:</b> <span id="modalRelease"></span></p><p><b>Language:</b> <span id="modalLanguage"></span></p><p><b>Quality:</b> <span id="modalQuality"></span></p></div></div><button id="streamBtn" style="margin:0 14px 12px 14px;width:calc(100% - 28px);padding:14px;border-radius:40px;background:linear-gradient(135deg,#ff416c,#ff4b2b);color:white;border:none;font-weight:bold;cursor:pointer;">🎬 Watch Now (Stream)</button><button id="telegramBtn">📱 Get Telegram Files</button></div>
+    <div class="modal-card"><img id="modalPoster" class="modal-poster">
+      <div class="close-modal" id="closeModalBtn">✕</div>
+      <div class="modal-info">
+        <h2 id="modalTitle"></h2>
+        <div id="modalYearText" class="year-text"></div>
+        <div class="meta"><span class="imdb">IMDB <b id="modalRating"></b></span><span id="modalAge"></span></div>
+        <div class="genres" id="modalGenres"></div>
+        <p id="modalPlot" class="plot-text"></p><span id="togglePlot" class="plot-toggle">Show More ▼</span>
+        <div class="extra-info">
+          <p><b>Duration:</b> <span id="modalDuration"></span></p>
+          <p><b>Type:</b> <span id="modalType"></span></p>
+          <p><b>Director:</b> <span id="modalDirector"></span></p>
+          <p><b>Released:</b> <span id="modalRelease"></span></p>
+          <p><b>Language:</b> <span id="modalLanguage"></span></p>
+          <p><b>Quality:</b> <span id="modalQuality"></span></p>
+        </div>
+      </div><button id="streamBtn" style="margin:0 14px 12px 14px;width:calc(100% - 28px);padding:14px;border-radius:40px;background:linear-gradient(135deg,#ff416c,#ff4b2b);color:white;border:none;font-weight:bold;cursor:pointer;">🎬 Watch Now (Stream)</button><button id="telegramBtn">📱 Get Telegram Files</button>
+    </div>
   </div>
 
   <script>
@@ -711,7 +764,6 @@
         showToast(`${buttonType} link not available`);
         return;
       }
-      
       const loadingDiv = document.createElement('div');
       loadingDiv.id = 'loadingOverlay';
       loadingDiv.innerHTML = `
@@ -730,11 +782,9 @@
         </style>
       `;
       document.body.appendChild(loadingDiv);
-      
       let seconds = 5;
       let cancelled = false;
       const countdownEl = document.getElementById('countdown');
-      
       const timer = setInterval(() => {
         if (cancelled) return;
         seconds--;
@@ -745,7 +795,6 @@
           window.open(link, '_blank');
         }
       }, 1000);
-      
       const cancelBtn = document.getElementById('cancelLoading');
       if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
@@ -756,7 +805,6 @@
         });
       }
     }
-
     async function loadMovies() {
       try {
         const response = await fetch('movies.json');
@@ -765,16 +813,14 @@
         movieData = data;
         renderAll();
         initBanner();
-      
         setTimeout(() => {
           document.querySelectorAll('.banner-watch-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
               e.stopPropagation();
               const title = btn.getAttribute('data-title');
-      // First try to find in popular/upcoming/webSeries
+              // First try to find in popular/upcoming/webSeries
               let found = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries].find(m => m.title === title);
-      
-      // If not found, create from banner data
+              // If not found, create from banner data
               if (!found) {
                 const bannerSlide = movieData.bannerSlides.find(s => s.title === title);
                 if (bannerSlide) {
@@ -802,7 +848,6 @@
             });
           });
         }, 200);
-        
         initTelegramButton();
         initStreamButton();
       } catch (error) {
@@ -841,8 +886,13 @@
       toggleBtn.innerText = "Show More ▼";
       toggleBtn.onclick = () => {
         expanded = !expanded;
-        if (expanded) { plotEl.innerText = fullPlot; toggleBtn.innerText = "Show Less ▲"; }
-        else { plotEl.innerText = shortPlot; toggleBtn.innerText = "Show More ▼"; }
+        if (expanded) {
+          plotEl.innerText = fullPlot;
+          toggleBtn.innerText = "Show Less ▲";
+        } else {
+          plotEl.innerText = shortPlot;
+          toggleBtn.innerText = "Show More ▼";
+        }
       };
       document.getElementById('modalTitle').innerText = movie.title;
       document.getElementById('modalPoster').src = movie.poster;
@@ -862,10 +912,10 @@
       document.getElementById('telegramBtn').setAttribute('data-telegram-link', movie.telegramLink || "#");
       document.getElementById('movieModal').classList.add('show');
       document.body.classList.add('modal-open');
+      const modalCard = document.querySelector('#movieModal .modal-card');
+      if (modalCard) modalCard.scrollTop = 0;
     }
-    const modalCard = document.querySelector('#movieModal .modal-card');
-    if (modalCard) modalCard.scrollTop = 0;
-    }
+
     function closeModal() {
       document.getElementById('movieModal').classList.remove('show');
       document.body.classList.remove('modal-open');
@@ -891,43 +941,75 @@
         div.innerHTML = `<div class="banner-content"><h1>${slide.title}</h1><p>${slide.year} • ${slide.type}</p><button class="banner-watch-btn" data-title="${slide.title}">Watch Now</button></div>`;
         container.appendChild(div);
       });
-      
       const total = slides.length;
       container.appendChild(container.children[0].cloneNode(true));
-      container.insertBefore(container.children[total-1].cloneNode(true), container.children[0]);
+      container.insertBefore(container.children[total - 1].cloneNode(true), container.children[0]);
       container.style.transform = 'translateX(-100%)';
-      
       dotsContainer.innerHTML = '';
       slides.forEach((_, i) => {
         const dot = document.createElement('div');
         dot.classList.add('banner-dot');
-        if(i === 0) dot.classList.add('active');
+        if (i === 0) dot.classList.add('active');
         dot.addEventListener('click', () => goToSlide(i));
         dotsContainer.appendChild(dot);
       });
-      
       let currentIndex = 0;
       let autoInterval;
-      
+
       function updateDots() {
         const dots = document.querySelectorAll('.banner-dot');
         let realIdx = ((currentIndex % total) + total) % total;
-        dots.forEach((dot, i) => { if(i === realIdx) dot.classList.add('active'); else dot.classList.remove('active'); });
+        dots.forEach((dot, i) => {
+          if (i === realIdx) dot.classList.add('active');
+          else dot.classList.remove('active');
+        });
       }
-      
-      function goToSlide(idx) { currentIndex = idx; container.style.transition = 'transform 0.6s ease'; container.style.transform = `translateX(-${(currentIndex+1)*100}%)`; updateDots(); }
-      function next() { currentIndex++; container.style.transition = 'transform 0.6s ease'; container.style.transform = `translateX(-${(currentIndex+1)*100}%)`; }
-      function prev() { currentIndex--; container.style.transition = 'transform 0.6s ease'; container.style.transform = `translateX(-${(currentIndex+1)*100}%)`; }
-      function resetTimer() { if(autoInterval) clearInterval(autoInterval); autoInterval = setInterval(() => next(), 4000); }
-      
+
+      function goToSlide(idx) {
+        currentIndex = idx;
+        container.style.transition = 'transform 0.6s ease';
+        container.style.transform = `translateX(-${(currentIndex+1)*100}%)`;
+        updateDots();
+      }
+
+      function next() {
+        currentIndex++;
+        container.style.transition = 'transform 0.6s ease';
+        container.style.transform = `translateX(-${(currentIndex+1)*100}%)`;
+      }
+
+      function prev() {
+        currentIndex--;
+        container.style.transition = 'transform 0.6s ease';
+        container.style.transform = `translateX(-${(currentIndex+1)*100}%)`;
+      }
+
+      function resetTimer() {
+        if (autoInterval) clearInterval(autoInterval);
+        autoInterval = setInterval(() => next(), 4000);
+      }
       container.addEventListener('transitionend', () => {
-        if(currentIndex >= total) { container.style.transition = 'none'; currentIndex = 0; container.style.transform = 'translateX(-100%)'; updateDots(); }
-        else if(currentIndex < 0) { container.style.transition = 'none'; currentIndex = total-1; container.style.transform = `translateX(-${(currentIndex+1)*100}%)`; updateDots(); }
+        if (currentIndex >= total) {
+          container.style.transition = 'none';
+          currentIndex = 0;
+          container.style.transform = 'translateX(-100%)';
+          updateDots();
+        } else if (currentIndex < 0) {
+          container.style.transition = 'none';
+          currentIndex = total - 1;
+          container.style.transform = `translateX(-${(currentIndex+1)*100}%)`;
+          updateDots();
+        }
         updateDots();
       });
-      
-      document.getElementById('arrowLeft')?.addEventListener('click', () => { prev(); resetTimer(); });
-      document.getElementById('arrowRight')?.addEventListener('click', () => { next(); resetTimer(); });
+      document.getElementById('arrowLeft')?.addEventListener('click', () => {
+        prev();
+        resetTimer();
+      });
+      document.getElementById('arrowRight')?.addEventListener('click', () => {
+        next();
+        resetTimer();
+      });
       resetTimer();
     }
 
@@ -938,14 +1020,23 @@
       const searchGrid = document.getElementById('searchResultsGrid');
       input.addEventListener('input', function() {
         const filter = this.value.toLowerCase().trim();
-        if(filter === '') { homepage.style.display = 'block'; searchContainer.style.display = 'none'; return; }
-        homepage.style.display = 'none'; searchContainer.style.display = 'block';
+        if (filter === '') {
+          homepage.style.display = 'block';
+          searchContainer.style.display = 'none';
+          return;
+        }
+        homepage.style.display = 'none';
+        searchContainer.style.display = 'block';
         const all = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
         const matches = all.filter(m => m.title.toLowerCase().includes(filter));
         searchGrid.innerHTML = '';
-        if(matches.length === 0) { searchGrid.innerHTML = '<div class="no-results">No matching movies or series found</div>'; return; }
+        if (matches.length === 0) {
+          searchGrid.innerHTML = '<div class="no-results">No matching movies or series found</div>';
+          return;
+        }
         matches.forEach(m => {
-          const card = document.createElement('div'); card.className = 'search-result-card';
+          const card = document.createElement('div');
+          card.className = 'search-result-card';
           card.innerHTML = `<img src="${m.poster}" onerror="this.src='https://via.placeholder.com/120x180?text=No+Image'"><div class="title">${m.title}<br><span class="year">(${m.year})</span></div>`;
           card.addEventListener('click', () => openModal(m));
           searchGrid.appendChild(card);
@@ -957,19 +1048,30 @@
       document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const lang = btn.getAttribute('data-lang');
-          const titles = { hindi:'Hindi Movies', english:'English Movies', tamil:'Tamil Movies', telugu:'Telugu Movies', malayalam:'Malayalam Movies', kannada:'Kannada Movies' };
+          const titles = {
+            hindi: 'Hindi Movies',
+            english: 'English Movies',
+            tamil: 'Tamil Movies',
+            telugu: 'Telugu Movies',
+            malayalam: 'Malayalam Movies',
+            kannada: 'Kannada Movies'
+          };
           document.getElementById('langModalTitle').innerText = titles[lang] || 'Movies';
           const all = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
           const filtered = all.filter(m => {
-            if(!m.language) return false;
+            if (!m.language) return false;
             const langs = Array.isArray(m.language) ? m.language : [m.language];
             return langs.some(l => l.trim().toLowerCase() === lang.toLowerCase());
           });
           const container = document.getElementById('languageMoviesList');
           container.innerHTML = '';
-          if(filtered.length === 0) { container.innerHTML = '<div style="padding:20px;text-align:center">No movies available</div>'; return; }
+          if (filtered.length === 0) {
+            container.innerHTML = '<div style="padding:20px;text-align:center">No movies available</div>';
+            return;
+          }
           filtered.forEach(m => {
-            const card = document.createElement('div'); card.className = 'lang-movie-card';
+            const card = document.createElement('div');
+            card.className = 'lang-movie-card';
             card.innerHTML = `<img src="${m.poster}" onerror="this.src='https://via.placeholder.com/100x150?text=No+Image'"><div class="title">${m.title}<br><span class="year">(${m.year})</span></div>`;
             card.addEventListener('click', () => openModal(m));
             container.appendChild(card);
@@ -983,7 +1085,7 @@
         document.body.classList.remove('modal-open');
       });
       document.getElementById('languageModal')?.addEventListener('click', (e) => {
-        if(e.target === document.getElementById('languageModal')) {
+        if (e.target === document.getElementById('languageModal')) {
           document.getElementById('languageModal').classList.remove('show');
           document.body.classList.remove('modal-open');
         }
@@ -994,7 +1096,7 @@
       document.querySelectorAll('.more-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const target = document.getElementById(btn.getAttribute('data-target'));
-          if(target) target.scrollLeft += 260;
+          if (target) target.scrollLeft += 260;
         });
       });
     }
@@ -1002,13 +1104,16 @@
     function initBottomNav() {
       document.querySelectorAll('.bottomnav .menu').forEach(menu => {
         menu.addEventListener('click', () => {
-          if(menu.getAttribute('data-nav') !== 'home') {
+          if (menu.getAttribute('data-nav') !== 'home') {
             showToast('Coming Soon..!');
             return;
           }
           document.querySelectorAll('.bottomnav .menu').forEach(m => m.classList.remove('active-bar'));
           menu.classList.add('active-bar');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
         });
       });
       setTimeout(() => {
@@ -1043,17 +1148,25 @@
     function initTheme() {
       const btn = document.getElementById('themeToggle');
       const body = document.body;
-      if(localStorage.getItem('theme') === 'dark') { body.classList.add('dark-mode'); btn.innerHTML = '☀️'; }
+      if (localStorage.getItem('theme') === 'dark') {
+        body.classList.add('dark-mode');
+        btn.innerHTML = '☀️';
+      }
       btn.addEventListener('click', () => {
         body.classList.toggle('dark-mode');
-        if(body.classList.contains('dark-mode')) { btn.innerHTML = '☀️'; localStorage.setItem('theme', 'dark'); }
-        else { btn.innerHTML = '🌙'; localStorage.setItem('theme', 'light'); }
+        if (body.classList.contains('dark-mode')) {
+          btn.innerHTML = '☀️';
+          localStorage.setItem('theme', 'dark');
+        } else {
+          btn.innerHTML = '🌙';
+          localStorage.setItem('theme', 'light');
+        }
       });
     }
-
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-    document.getElementById('movieModal').addEventListener('click', (e) => { if(e.target === document.getElementById('movieModal')) closeModal(); });
-
+    document.getElementById('movieModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('movieModal')) closeModal();
+    });
     loadMovies();
     initSearch();
     initLanguageFilter();
@@ -1062,4 +1175,5 @@
     initTheme();
   </script>
 </body>
+
 </html>
