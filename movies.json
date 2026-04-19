@@ -1,0 +1,124 @@
+{
+  "banner": [
+    {
+      "title": "Funky",
+      "year": "2026",
+      "poster": "https://i.ibb.co/20KQsZ4N/x.jpg",
+      "genre": "Romance/Comedy"
+    },
+    {
+      "title": "With Love",
+      "year": "2026",
+      "poster": "https://i.ibb.co/d4JYzpvQ/x.jpg",
+      "genre": "Romance/Comedy"
+    }
+  ],
+  "popular": [
+    {
+      "title": "Landlord",
+      "year": "2026",
+      "poster": "https://i.ibb.co/RGM7y1XB/x.jpg",
+      "type": "Movie",
+      "rating": "4.9 / 10",
+      "age": "U/A 16+",
+      "plot": "In a village under a brutal landlord's rule, fear silences the poor and justice is denied. A young woman constable challenges the system. When an innocent family is burnt alive, outrage erupts into violent uprising.",
+      "duration": "2h 36min",
+      "director": "Jadesh Kumar Hampi",
+      "released": "23 Jan 2026",
+      "language": ["Kannada", "Tamil"],
+      "quality": "HDRip",
+      "genres": ["#Action", "#Drama", "#Family"],
+      "streamLink": "#",
+      "telegramLink": "https://t.me/Cinemaniacs_Hub"
+    },
+    {
+      "title": "Ala Vaikunthapurramuloo",
+      "year": "2020",
+      "poster": "https://i.ibb.co/MQhP1f1/x.jpg",
+      "type": "Movie",
+      "rating": "8.2/10",
+      "age": "U/A 13+",
+      "plot": "A man discovers he was exchanged at birth and must navigate two families while proving his worth.",
+      "duration": "2h 45min",
+      "director": "Trivikram Srinivas",
+      "released": "12 Jan 2020",
+      "language": ["Telugu"],
+      "quality": "HD",
+      "genres": ["#Action", "#Drama"],
+      "streamLink": "#",
+      "telegramLink": "https://t.me/Cinemaniacs_Hub"
+    },
+    {
+      "title": "Love Insurance Kompany",
+      "year": "2026",
+      "poster": "https://i.ibb.co/RpkYZDDW/x.jpg",
+      "type": "Movie",
+      "rating": "7.2/10",
+      "age": "U/A 16+",
+      "plot": "A quirky insurance company that covers heartbreaks leads to unexpected romance and chaos.",
+      "duration": "2h 20min",
+      "director": "Sashi Kiran",
+      "released": "14 Feb 2026",
+      "language": ["Hindi"],
+      "quality": "HD",
+      "genres": ["#Romance", "#Comedy"],
+      "streamLink": "#",
+      "telegramLink": "https://t.me/Cinemaniacs_Hub"
+    }
+  ],
+  "upcoming": [
+    {
+      "title": "Dhurandhar The Revenge",
+      "year": "March 19",
+      "poster": "https://i.ibb.co/pj6DJCBb/x.jpg",
+      "type": "Upcoming",
+      "rating": "N/A",
+      "age": "",
+      "plot": "A fierce tale of vengeance and power.",
+      "duration": "N/A",
+      "director": "Prakash Raj",
+      "released": "19 Mar 2026",
+      "language": ["Hindi"],
+      "quality": "N/A",
+      "genres": ["#Action"],
+      "streamLink": "#",
+      "telegramLink": "https://t.me/Cinemaniacs_Hub"
+    },
+    {
+      "title": "Toxic",
+      "year": "June 14",
+      "poster": "https://i.ibb.co/sJRTSqJw/x.jpg",
+      "type": "Upcoming",
+      "rating": "N/A",
+      "age": "",
+      "plot": "A gripping thriller about hidden crimes and deadly secrets.",
+      "duration": "N/A",
+      "director": "Geetu Mohandas",
+      "released": "14 Jun 2026",
+      "language": ["English"],
+      "quality": "N/A",
+      "genres": ["#Thriller"],
+      "streamLink": "#",
+      "telegramLink": "https://t.me/Cinemaniacs_Hub"
+    }
+  ],
+  "webSeries": [
+    {
+      "title": "Raakshasa S01",
+      "year": "2026",
+      "poster": "https://i.ibb.co/vv1MNYc2/x.jpg",
+      "type": "Web Series",
+      "rating": "8.9/10",
+      "age": "18+",
+      "plot": "A dark crime drama set in the underworld of a metropolitan city.",
+      "duration": "6 Episodes",
+      "director": "Rohit Shetty",
+      "released": "2 Apr 2026",
+      "language": ["Hindi", "Tamil"],
+      "quality": "4K",
+      "genres": ["#Crime", "#Thriller"],
+      "streamLink": "#",
+      "telegramLink": "https://t.me/Cinemaniacs_Hub"
+    }
+  ]
+}
