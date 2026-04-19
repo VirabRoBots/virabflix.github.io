@@ -780,7 +780,7 @@
 
         <textarea id="reqNote" placeholder="Extra details (optional)" style="width:100%;padding:12px;margin-top:10px;border-radius:10px;border:1px solid #ccc;height:80px;"></textarea>
 
-        <button id="sendRequestBtn" style="margin-top:15px;width:100%;padding:14px;border-radius:40px;background:linear-gradient(135deg,#00c6ff,#0072ff);color:white;border:none;font-weight:bold;">
+        <button id="sendRequestBtn" style="margin-top:15px;width:100%;padding:14px;border-radius:40px;background: linear-gradient(45deg, #00c853, #00e676);color:white;border:none;font-weight:bold;">
           📩 Send Request
         </button>
       </div>
@@ -1147,9 +1147,14 @@
     function initBottomNav() {
       document.querySelectorAll('.bottomnav .menu').forEach(menu => {
         menu.addEventListener('click', () => {
-          if (menu.getAttribute('data-nav') !== 'home') {
-            showToast('Coming Soon..!');
-            return;
+          const nav = menu.getAttribute('data-nav');
+          if (nav === 'home') {
+            document.querySelectorAll('.bottomnav .menu').forEach(m => m.classList.remove('active-bar'));
+            menu.classList.add('active-bar');
+            window.scrollTo({
+              top: 0,
+              behavior: 'smooth'
+            });
           }
           document.querySelectorAll('.bottomnav .menu').forEach(m => m.classList.remove('active-bar'));
           menu.classList.add('active-bar');
