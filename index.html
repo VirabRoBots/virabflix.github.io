@@ -863,7 +863,9 @@
       document.getElementById('movieModal').classList.add('show');
       document.body.classList.add('modal-open');
     }
-
+    const modalCard = document.querySelector('#movieModal .modal-card');
+    if (modalCard) modalCard.scrollTop = 0;
+    }
     function closeModal() {
       document.getElementById('movieModal').classList.remove('show');
       document.body.classList.remove('modal-open');
