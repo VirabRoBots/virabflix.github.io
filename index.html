@@ -54,11 +54,7 @@
     }
 
     body.dark-mode .logo-text {
-      font-size: 20px;
-      font-weight: 800;
       color: white;
-      position: relative;
-      z-index: 3;
     }
 
     .header-right {
@@ -274,10 +270,6 @@
       text-align: center;
       font-weight: 500;
       color: #000;
-    }
-
-    body.dark-mode .title span {
-      color: #fff !important;
     }
 
     body.dark-mode .title {
@@ -517,30 +509,6 @@
       white-space: nowrap;
     }
 
-    .language-movies-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 15px;
-      padding: 20px;
-      justify-items: center;
-      max-height: 60vh;
-      overflow-y: auto;
-    }
-
-    .lang-movie-card {
-      text-align: center;
-      cursor: pointer;
-      width: 100%;
-      max-width: 100px;
-    }
-
-    .lang-movie-card img {
-      width: 100%;
-      height: 150px;
-      border-radius: 8px;
-      object-fit: cover;
-    }
-
     .toast-message {
       position: fixed;
       top: 80px;
@@ -604,20 +572,8 @@
       color: #00c6ff !important;
     }
 
-    body.dark-mode .year-text {
-      color: #ccc;
-    }
-
     body.dark-mode .lang-btn {
       background: linear-gradient(45deg, #e94560, #ff6b6b);
-    }
-
-    body.dark-mode #languageModal .modal-card {
-      background: #0f172a;
-    }
-
-    body.dark-mode #languageModal .lang-movie-card .title {
-      color: #fff;
     }
 
     #searchResultsContainer {
@@ -658,10 +614,6 @@
       color: #666;
     }
 
-    body.dark-mode .no-results {
-      color: #ccc;
-    }
-
     @media screen and (max-width:480px) {
       .banner-container {
         border-radius: 15px;
@@ -676,12 +628,6 @@
       }
       #searchInput {
         width: 130px;
-      }
-      #searchInput:focus {
-        width: 160px;
-      }
-      .modal-poster {
-        max-height: 40vh;
       }
       .search-result-card {
         width: 100px;
@@ -752,7 +698,6 @@
       bannerSlides: []
     };
 
-    // Helper function for toast notifications
     function showToast(message) {
       const toast = document.createElement('div');
       toast.className = 'toast-message';
@@ -761,7 +706,6 @@
       setTimeout(() => toast.remove(), 2000);
     }
 
-    // Loading function with 5-second delay
     function showLoadingAndRedirect(link, buttonType) {
       if (!link || link === '#') {
         showToast(`${buttonType} link not available`);
@@ -813,7 +757,6 @@
       }
     }
 
-    // Load data from external movies.json file
     async function loadMovies() {
       try {
         const response = await fetch('movies.json');
@@ -822,12 +765,29 @@
         movieData = data;
         renderAll();
         initBanner();
-        // Re-initialize buttons after data loads
+        
+        // FIX: Banner Watch Now button listeners - added after data loads
+        setTimeout(() => {
+          document.querySelectorAll('.banner-watch-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const title = btn.getAttribute('data-title');
+              const allMovies = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
+              const found = allMovies.find(m => m.title === title);
+              if (found) {
+                openModal(found);
+              } else {
+                showToast('Movie details not found');
+              }
+            });
+          });
+        }, 200);
+        
         initTelegramButton();
         initStreamButton();
       } catch (error) {
-        console.error('Error loading movies.json:', error);
-        document.getElementById('popularMovies').innerHTML = '<div style="padding:20px;text-align:center">⚠️ Failed to load movies.json. Make sure the file exists in the same folder.</div>';
+        console.error('Error:', error);
+        document.getElementById('popularMovies').innerHTML = '<div style="padding:20px;text-align:center">⚠️ Failed to load movies.json</div>';
         document.getElementById('upcomingMovies').innerHTML = '<div style="padding:20px;text-align:center">⚠️ Failed to load movies.json</div>';
         document.getElementById('webSeries').innerHTML = '<div style="padding:20px;text-align:center">⚠️ Failed to load movies.json</div>';
       }
@@ -882,7 +842,6 @@
       document.getElementById('telegramBtn').setAttribute('data-telegram-link', movie.telegramLink || "#");
       document.getElementById('movieModal').classList.add('show');
       document.body.classList.add('modal-open');
-      if(document.querySelector('#movieModal .modal-card')) document.querySelector('#movieModal .modal-card').scrollTop = 0;
     }
 
     function closeModal() {
@@ -907,15 +866,15 @@
         const div = document.createElement('div');
         div.className = 'banner-item';
         div.style.backgroundImage = `url('${slide.poster}')`;
-        div.innerHTML = `<div class="banner-content"><h1>${slide.title}</h1><p>${slide.year} • ${slide.type}</p><button class="banner-watch-btn" data-title="${slide.title}" data-poster="${slide.poster}" data-year="${slide.year}">Watch Now</button></div>`;
+        div.innerHTML = `<div class="banner-content"><h1>${slide.title}</h1><p>${slide.year} • ${slide.type}</p><button class="banner-watch-btn" data-title="${slide.title}">Watch Now</button></div>`;
         container.appendChild(div);
       });
+      
       const total = slides.length;
-      const firstClone = container.children[0].cloneNode(true);
-      const lastClone = container.children[total-1].cloneNode(true);
-      container.appendChild(firstClone);
-      container.insertBefore(lastClone, container.children[0]);
+      container.appendChild(container.children[0].cloneNode(true));
+      container.insertBefore(container.children[total-1].cloneNode(true), container.children[0]);
       container.style.transform = 'translateX(-100%)';
+      
       dotsContainer.innerHTML = '';
       slides.forEach((_, i) => {
         const dot = document.createElement('div');
@@ -924,6 +883,7 @@
         dot.addEventListener('click', () => goToSlide(i));
         dotsContainer.appendChild(dot);
       });
+      
       let currentIndex = 0;
       let autoInterval;
       
@@ -947,15 +907,6 @@
       document.getElementById('arrowLeft')?.addEventListener('click', () => { prev(); resetTimer(); });
       document.getElementById('arrowRight')?.addEventListener('click', () => { next(); resetTimer(); });
       resetTimer();
-      
-      document.querySelectorAll('.banner-watch-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const title = btn.dataset.title;
-          let found = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries].find(m => m.title === title);
-          if(found) openModal(found);
-        });
-      });
     }
 
     function initSearch() {
@@ -1043,22 +994,18 @@
       }, 100);
     }
 
-    // Updated Telegram button
     function initTelegramButton() {
       const telegramBtn = document.getElementById('telegramBtn');
       if (telegramBtn) {
-        // Remove existing listeners to avoid duplicates
         const newBtn = telegramBtn.cloneNode(true);
         telegramBtn.parentNode.replaceChild(newBtn, telegramBtn);
         newBtn.addEventListener('click', () => {
           const link = newBtn.getAttribute('data-telegram-link') || '#';
           showLoadingAndRedirect(link, 'Telegram Files');
         });
-        document.getElementById('telegramBtn');
       }
     }
 
-    // Updated Stream button
     function initStreamButton() {
       const streamBtn = document.getElementById('streamBtn');
       if (streamBtn) {
