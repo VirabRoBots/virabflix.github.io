@@ -844,13 +844,11 @@
         if (seconds <= 0) {
           clearInterval(timer);
           loadingDiv.remove();
-          try {
-            window.open(link, '_blank');
-            setTimeout(() => {
-              window.location.href = link;
-            }, 500);
-          } catch {
+          const isTelegram = /Telegram/i.test(navigator.userAgent);
+          if (isTelegram) {
             window.location.href = link;
+          } else {
+            window.open(link, '_blank');
           }
         }
       }, 1000);
