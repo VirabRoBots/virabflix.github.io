@@ -1231,67 +1231,65 @@
       const newBtn = btn.cloneNode(true);
       btn.parentNode.replaceChild(newBtn, btn);
       newBtn.addEventListener('click', async () => {
-          const name = document.getElementById('reqName').value.trim();
-          const year = document.getElementById('reqYear').value.trim();
-          const note = document.getElementById('reqNote').value.trim();
-          if (!name) {
-            showToast('Enter movie name');
-            return;
-          }
-          try {
-            const res = await fetch('/api/send-request', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                name,
-                year,
-                note
-              })
-            });
-            const data = await res.json();
-            if (data.success) {
-              showToast('Request sent ✅');
-              document.getElementById('reqName').value = '';
-              document.getElementById('reqYear').value = '';
-              document.getElementById('reqNote').value = '';
-              document.getElementById('requestModal').classList.remove('show');
-              document.body.classList.remove('modal-open');
-            }
+        const name = document.getElementById('reqName').value.trim();
+        const year = document.getElementById('reqYear').value.trim();
+        const note = document.getElementById('reqNote').value.trim();
+        if (!name) return;
+        try {
+          const res = await fetch('/api/send-request', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              name,
+              year,
+              note
+            })
           });
-      }
-
-      function initTheme() {
-        const btn = document.getElementById('themeToggle');
-        const body = document.body;
-        if (localStorage.getItem('theme') === 'dark') {
-          body.classList.add('dark-mode');
-          btn.innerHTML = '☀️';
-        }
-        btn.addEventListener('click', () => {
-          body.classList.toggle('dark-mode');
-          if (body.classList.contains('dark-mode')) {
-            btn.innerHTML = '☀️';
-            localStorage.setItem('theme', 'dark');
-          } else {
-            btn.innerHTML = '🌙';
-            localStorage.setItem('theme', 'light');
+          const data = await res.json();
+          if (data.success) {
+            showToast('Request sent ✅');
+            document.getElementById('reqName').value = '';
+            document.getElementById('reqYear').value = '';
+            document.getElementById('reqNote').value = '';
+            document.getElementById('requestModal').classList.remove('show');
+            document.body.classList.remove('modal-open');
           }
-        });
-      }
-      document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-      document.getElementById('movieModal').addEventListener('click', (e) => {
-        if (e.target === document.getElementById('movieModal')) closeModal();
+        } catch (err) {}
       });
-      loadMovies();
-      initRequestUI();
-      initRequestSend();
-      initSearch();
-      initLanguageFilter();
-      initMoreButtons();
-      initBottomNav();
-      initTheme();
+    }
+
+    function initTheme() {
+      const btn = document.getElementById('themeToggle');
+      const body = document.body;
+      if (localStorage.getItem('theme') === 'dark') {
+        body.classList.add('dark-mode');
+        btn.innerHTML = '☀️';
+      }
+      btn.addEventListener('click', () => {
+        body.classList.toggle('dark-mode');
+        if (body.classList.contains('dark-mode')) {
+          btn.innerHTML = '☀️';
+          localStorage.setItem('theme', 'dark');
+        } else {
+          btn.innerHTML = '🌙';
+          localStorage.setItem('theme', 'light');
+        }
+      });
+    }
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    document.getElementById('movieModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('movieModal')) closeModal();
+    });
+    loadMovies();
+    initRequestUI();
+    initRequestSend();
+    initSearch();
+    initLanguageFilter();
+    initMoreButtons();
+    initBottomNav();
+    initTheme();
   </script>
 </body>
 
