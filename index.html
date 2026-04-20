@@ -844,12 +844,7 @@
         if (seconds <= 0) {
           clearInterval(timer);
           loadingDiv.remove();
-          const isTelegram = /Telegram/i.test(navigator.userAgent);
-          if (isTelegram) {
-            window.location.href = link;
-          } else {
-            window.open(link, '_blank');
-          }
+          window.location.href = link;
         }
       }, 1000);
       const cancelBtn = document.getElementById('cancelLoading');
