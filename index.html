@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -587,16 +588,33 @@
       font-size: 22px;
       font-weight: bold;
       color: white;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
       z-index: 2;
     }
 
-    .kannada { background: linear-gradient(90deg, #ff512f, #dd2476); }
-    .english { background: linear-gradient(90deg, #4facfe, #00f2fe); }
-    .malayalam { background: linear-gradient(90deg, #7F00FF, #E100FF); }
-    .hindi { background: linear-gradient(90deg, #f7971e, #ffd200); }
-    .tamil { background: linear-gradient(90deg, #f857a6, #ff5858); }
-    .telugu { background: linear-gradient(90deg, #11998e, #38ef7d); }
+    .kannada {
+      background: linear-gradient(90deg, #ff512f, #dd2476);
+    }
+
+    .english {
+      background: linear-gradient(90deg, #4facfe, #00f2fe);
+    }
+
+    .malayalam {
+      background: linear-gradient(90deg, #7F00FF, #E100FF);
+    }
+
+    .hindi {
+      background: linear-gradient(90deg, #f7971e, #ffd200);
+    }
+
+    .tamil {
+      background: linear-gradient(90deg, #f857a6, #ff5858);
+    }
+
+    .telugu {
+      background: linear-gradient(90deg, #11998e, #38ef7d);
+    }
 
     .language-movies-list {
       display: grid;
@@ -641,30 +659,58 @@
     }
 
     @keyframes slideInRight {
-      from { opacity: 0; transform: translateX(50px); }
-      to { opacity: 1; transform: translateX(0); }
+      from {
+        opacity: 0;
+        transform: translateX(50px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
+
     @keyframes fadeOut {
-      to { opacity: 0; visibility: hidden; }
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
     }
 
     body.dark-mode {
       background: #1a1a2e;
       color: #fff;
     }
+
     body.dark-mode .bottomnav {
       background: #0f172a;
     }
+
     @media screen and (max-width:480px) {
-      .banner-item { height: 180px; }
-      .card img, .upcoming-card img, .search-result-card img { width: 100px; height: 150px; }
-      .language-row .card { min-width: 180px; }
+      .banner-item {
+        height: 180px;
+      }
+
+      .card img,
+      .upcoming-card img,
+      .search-result-card img {
+        width: 100px;
+        height: 150px;
+      }
+
+      .language-row .card {
+        min-width: 180px;
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="header">
-    <div class="logo-container"><div class="logo-circle"></div><div class="logo-text">Cinemaniacs Hub</div></div>
+    <div class="logo-container">
+      <div class="logo-circle"></div>
+      <div class="logo-text">Cinemaniacs Hub</div>
+    </div>
     <div class="header-right">
       <input type="text" id="searchInput" placeholder="Search movies, series...">
       <button id="themeToggle" style="background:#f0f0f0;border:none;font-size:20px;cursor:pointer;padding:8px;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;">🌙</button>
@@ -678,9 +724,13 @@
       <div class="arrow arrow-left" id="arrowLeft">&#10094;</div>
       <div class="arrow arrow-right" id="arrowRight">&#10095;</div>
     </div>
-    <div class="section-header"><h2>| Watch Popular Movies</h2><span class="more-btn" data-target="popularMovies">+ More</span></div>
+    <div class="section-header">
+      <h2>| Watch Popular Movies</h2><span class="more-btn" data-target="popularMovies">+ More</span>
+    </div>
     <div class="movies" id="popularMovies"></div>
-    <div class="section-header"><h2>| Choose Your Language</h2></div>
+    <div class="section-header">
+      <h2>| Choose Your Language</h2>
+    </div>
     <div class="language-row" id="languageRow">
       <div class="card kannada" data-lang="kannada"><span>ಕನ್ನಡ</span><img src="https://www.image2url.com/r2/default/images/1776715936624-e53340a4-66c8-4104-a942-a20d8aa533ee.png"></div>
       <div class="card hindi" data-lang="hindi"><span>हिंदी</span><img src="https://www.image2url.com/r2/default/images/1776717612181-0f8268ad-591c-46d4-8adf-ea577d205959.png"></div>
@@ -689,13 +739,20 @@
       <div class="card tamil" data-lang="tamil"><span>தமிழ்</span><img src="https://www.image2url.com/r2/default/images/1776719972455-8a409913-0c21-441a-b744-5be686269d0f.png"></div>
       <div class="card malayalam" data-lang="malayalam"><span>മലയാളം</span><img src="https://www.image2url.com/r2/default/images/1776720753135-d39df1b5-fc64-4d74-890b-81299618e917.png"></div>
     </div>
-    <div class="section-header"><h2>| Upcoming Movies</h2><span class="more-btn" data-target="upcomingMovies">+ More</span></div>
+    <div class="section-header">
+      <h2>| Upcoming Movies</h2><span class="more-btn" data-target="upcomingMovies">+ More</span>
+    </div>
     <div class="movies" id="upcomingMovies"></div>
-    <div class="section-header"><h2>| Popular WebSeries</h2><span class="more-btn" data-target="webSeries">+ More</span></div>
+    <div class="section-header">
+      <h2>| Popular WebSeries</h2><span class="more-btn" data-target="webSeries">+ More</span>
+    </div>
     <div class="movies" id="webSeries"></div>
   </div>
 
-  <div id="searchResultsContainer"><h3>Search Results</h3><div id="searchResultsGrid" class="search-results-grid"></div></div>
+  <div id="searchResultsContainer">
+    <h3>Search Results</h3>
+    <div id="searchResultsGrid" class="search-results-grid"></div>
+  </div>
 
   <div class="bottomnav">
     <div class="menu" data-nav="home"><img src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="home"></div>
@@ -705,21 +762,32 @@
   </div>
 
   <div id="movieModal" class="movie-modal">
-    <div class="modal-card"><img id="modalPoster" class="modal-poster"><div class="close-modal" id="closeModalBtn">✕</div>
-      <div class="modal-info"><h2 id="modalTitle"></h2><div id="modalYearText" class="year-text"></div>
+    <div class="modal-card"><img id="modalPoster" class="modal-poster">
+      <div class="close-modal" id="closeModalBtn">✕</div>
+      <div class="modal-info">
+        <h2 id="modalTitle"></h2>
+        <div id="modalYearText" class="year-text"></div>
         <div class="meta"><span class="imdb">IMDB <b id="modalRating"></b></span><span id="modalAge"></span></div>
-        <div class="genres" id="modalGenres"></div><p id="modalPlot" class="plot-text"></p><span id="togglePlot" class="plot-toggle">Show More ▼</span>
-        <div class="extra-info"><p><b>Duration:</b> <span id="modalDuration"></span></p><p><b>Type:</b> <span id="modalType"></span></p>
-        <p><b>Director:</b> <span id="modalDirector"></span></p><p><b>Released:</b> <span id="modalRelease"></span></p>
-        <p><b>Language:</b> <span id="modalLanguage"></span></p><p><b>Quality:</b> <span id="modalQuality"></span></p></div>
+        <div class="genres" id="modalGenres"></div>
+        <p id="modalPlot" class="plot-text"></p><span id="togglePlot" class="plot-toggle">Show More ▼</span>
+        <div class="extra-info">
+          <p><b>Duration:</b> <span id="modalDuration"></span></p>
+          <p><b>Type:</b> <span id="modalType"></span></p>
+          <p><b>Director:</b> <span id="modalDirector"></span></p>
+          <p><b>Released:</b> <span id="modalRelease"></span></p>
+          <p><b>Language:</b> <span id="modalLanguage"></span></p>
+          <p><b>Quality:</b> <span id="modalQuality"></span></p>
+        </div>
       </div><button id="streamBtn" style="margin:0 14px 12px 14px;width:calc(100% - 28px);padding:14px;border-radius:40px;background:linear-gradient(135deg,#ff416c,#ff4b2b);color:white;border:none;font-weight:bold;cursor:pointer;">🎬 Watch Now (Stream)</button>
       <button id="telegramBtn">📱 Get Telegram Files</button>
     </div>
   </div>
 
   <div id="requestModal" class="movie-modal">
-    <div class="modal-card"><div class="close-modal" id="closeRequestModal">✕</div>
-      <div class="modal-info"><h2 style="text-align:center;">Request Movie</h2>
+    <div class="modal-card">
+      <div class="close-modal" id="closeRequestModal">✕</div>
+      <div class="modal-info">
+        <h2 style="text-align:center;">Request Movie</h2>
         <input id="reqName" placeholder="Movie Name" style="width:100%;padding:12px;margin-top:10px;border-radius:10px;border:1px solid #ccc;">
         <input id="reqYear" placeholder="Year (optional)" style="width:100%;padding:12px;margin-top:10px;border-radius:10px;border:1px solid #ccc;">
         <textarea id="reqNote" placeholder="Extra details (optional)" style="width:100%;padding:12px;margin-top:10px;border-radius:10px;border:1px solid #ccc;height:80px;"></textarea>
@@ -729,88 +797,464 @@
   </div>
 
   <script>
-    let movieData = { popular: [], upcoming: [], webSeries: [], bannerSlides: [] };
+    let movieData = {
+      popular: [],
+      upcoming: [],
+      webSeries: [],
+      bannerSlides: []
+    };
 
-    function showToast(msg) { const t=document.createElement('div'); t.className='toast-message'; t.innerText=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2000); }
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast-message';
+      t.innerText = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2000);
+    }
+
     function showLoadingAndRedirect(link, type) {
-      if(!link || link==='#') { showToast(`${type} link not available`); return; }
-      const div=document.createElement('div'); div.id='loadingOverlay'; div.innerHTML=`<div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:10001; display:flex; align-items:center; justify-content:center; flex-direction:column;"><div style="background:linear-gradient(45deg,#00c6ff,#0072ff); width:70px; height:70px; border-radius:50%; animation:pulse 1s ease-in-out infinite;"></div><p style="color:white; margin-top:25px; font-weight:600;">Loading ${type}...</p><p style="color:#aaa;">Redirecting in <span id="countdown" style="color:#00c6ff; font-weight:bold;">5</span>s</p><button id="cancelLoading" style="margin-top:30px; padding:8px 25px; border-radius:30px; background:#ff4757; color:white; cursor:pointer;">Cancel</button></div><style>@keyframes pulse{0%{transform:scale(0.8);opacity:0.5;}70%{transform:scale(1.1);opacity:1;}100%{transform:scale(0.8);opacity:0.5;}}</style>`;
-      document.body.appendChild(div); let sec=5, cancelled=false; const timer=setInterval(()=>{ if(cancelled) return; sec--; const el=document.getElementById('countdown'); if(el) el.innerText=sec; if(sec<=0){ clearInterval(timer); div.remove(); const isTel=/Telegram/i.test(navigator.userAgent); isTel?window.location.href=link:window.open(link,'_blank'); } },1000);
-      document.getElementById('cancelLoading')?.addEventListener('click',()=>{ cancelled=true; clearInterval(timer); div.remove(); });
+      if (!link || link === '#') {
+        showToast(`${type} link not available`);
+        return;
+      }
+      const div = document.createElement('div');
+      div.id = 'loadingOverlay';
+      div.innerHTML = `<div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:10001; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+    <div style="background:linear-gradient(45deg,#00c6ff,#0072ff); width:70px; height:70px; border-radius:50%; animation:pulse 1s ease-in-out infinite;"></div>
+    <p style="color:white; margin-top:25px; font-weight:600;">Loading ${type}...</p>
+    <p style="color:#aaa;">Opening link in <span id="countdown" style="color:#00c6ff; font-weight:bold;">3</span>s</p>
+    <button id="cancelLoading" style="margin-top:30px; padding:8px 25px; background:#ff4757; color:white; cursor:pointer;">Cancel</button>
+  </div>
+  <style>@keyframes pulse{0%{transform:scale(0.8);opacity:0.5;}70%{transform:scale(1.1);opacity:1;}100%{transform:scale(0.8);opacity:0.5;}}</style>`;
+      document.body.appendChild(div);
+      let sec = 3,
+        cancelled = false;
+      const timer = setInterval(() => {
+        if (cancelled) return;
+        sec--;
+        const el = document.getElementById('countdown');
+        if (el) el.innerText = sec;
+        if (sec <= 0) {
+          clearInterval(timer);
+          div.remove();
+          // Telegram fix - use try-catch and direct navigation
+          try {
+            window.location.href = link;
+          } catch (e) {
+            // Fallback for Telegram
+            window.open(link, '_blank');
+          }
+        }
+      }, 1000);
+      document.getElementById('cancelLoading')?.addEventListener('click', () => {
+        cancelled = true;
+        clearInterval(timer);
+        div.remove();
+      });
+    }
+    async function loadMovies() {
+      try {
+        const res = await fetch('movies.json');
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        movieData = data;
+        renderAll();
+        initBanner();
+        setTimeout(() => {
+          document.querySelectorAll('.banner-watch-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const title = btn.getAttribute('data-title');
+              let found = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries].find(m => m.title === title);
+              if (!found) {
+                const bs = movieData.bannerSlides.find(s => s.title === title);
+                if (bs) found = {
+                  ...bs,
+                  rating: "N/A",
+                  age: "U/A",
+                  plot: "No description",
+                  duration: "N/A",
+                  director: "TBA",
+                  released: bs.year,
+                  language: ["Multiple"],
+                  quality: "HD",
+                  genres: [],
+                  streamLink: "#",
+                  telegramLink: "#"
+                };
+              }
+              found ? openModal(found) : showToast('Movie not found');
+            });
+          });
+        }, 100);
+        initTelegramStream();
+      } catch (e) {
+        console.error(e);
+        document.getElementById('popularMovies').innerHTML = '<div style="padding:20px;text-align:center">⚠️ Failed to load movies.json</div>';
+      }
     }
 
-    async function loadMovies(){
-      try{
-        const res=await fetch('movies.json');
-        if(!res.ok) throw new Error();
-        const data=await res.json();
-        movieData=data;
-        renderAll(); initBanner(); setTimeout(()=>{ document.querySelectorAll('.banner-watch-btn').forEach(btn=>{ btn.addEventListener('click',(e)=>{ e.stopPropagation(); const title=btn.getAttribute('data-title'); let found=[...movieData.popular,...movieData.upcoming,...movieData.webSeries].find(m=>m.title===title); if(!found){ const bs=movieData.bannerSlides.find(s=>s.title===title); if(bs) found={...bs, rating:"N/A", age:"U/A", plot:"No description", duration:"N/A", director:"TBA", released:bs.year, language:["Multiple"], quality:"HD", genres:[], streamLink:"#", telegramLink:"#"}; } found?openModal(found):showToast('Movie not found'); }); }); },100);
-        initTelegramStream();
-      }catch(e){ console.error(e); document.getElementById('popularMovies').innerHTML='<div style="padding:20px;text-align:center">⚠️ Failed to load movies.json</div>'; }
+    function renderSection(containerId, items, isUpcoming) {
+      const c = document.getElementById(containerId);
+      if (!c) return;
+      c.innerHTML = '';
+      if (!items?.length) {
+        c.innerHTML = '<div style="padding:20px;text-align:center;color:#999;">No items</div>';
+        return;
+      }
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = isUpcoming ? 'upcoming-card' : 'card';
+        card.innerHTML = `<img src="${item.poster}" alt="${item.title}" onerror="this.src='https://via.placeholder.com/120x180?text=No+Image'"><div class="title">${item.title}<br><span class="year">(${item.year})</span></div>`;
+        card.addEventListener('click', () => openModal(item));
+        c.appendChild(card);
+      });
     }
-    function renderSection(containerId, items, isUpcoming){
-      const c=document.getElementById(containerId); if(!c) return; c.innerHTML='';
-      if(!items?.length){ c.innerHTML='<div style="padding:20px;text-align:center;color:#999;">No items</div>'; return; }
-      items.forEach(item=>{ const card=document.createElement('div'); card.className=isUpcoming?'upcoming-card':'card'; card.innerHTML=`<img src="${item.poster}" alt="${item.title}" onerror="this.src='https://via.placeholder.com/120x180?text=No+Image'"><div class="title">${item.title}<br><span class="year">(${item.year})</span></div>`; card.addEventListener('click',()=>openModal(item)); c.appendChild(card); });
+
+    function openModal(movie) {
+      const full = movie.plot || "No description available";
+      const plotEl = document.getElementById('modalPlot');
+      const toggle = document.getElementById('togglePlot');
+      let expanded = false;
+      const short = full.length > 100 ? full.substring(0, 100) + "..." : full;
+      plotEl.innerText = short;
+      toggle.style.display = full.length > 100 ? "inline-block" : "none";
+      toggle.innerText = "Show More ▼";
+      toggle.onclick = () => {
+        expanded = !expanded;
+        plotEl.innerText = expanded ? full : short;
+        toggle.innerText = expanded ? "Show Less ▲" : "Show More ▼";
+      };
+      document.getElementById('modalTitle').innerText = movie.title;
+      document.getElementById('modalPoster').src = movie.poster;
+      document.getElementById('modalRating').innerText = movie.rating || "N/A";
+      document.getElementById('modalYearText').innerText = "(" + movie.year + ")";
+      document.getElementById('modalAge').innerText = movie.age || "U/A";
+      document.getElementById('modalDuration').innerText = movie.duration || "-";
+      document.getElementById('modalType').innerText = movie.type || "-";
+      document.getElementById('modalDirector').innerText = movie.director || "-";
+      document.getElementById('modalRelease').innerText = movie.released || "-";
+      let langVal = movie.language ? (Array.isArray(movie.language) ? movie.language.join(", ") : movie.language) : "-";
+      document.getElementById('modalLanguage').innerText = langVal;
+      document.getElementById('modalQuality').innerText = movie.quality || "-";
+      document.getElementById('modalGenres').innerHTML = movie.genres ? movie.genres.map(g => `<span>${g}</span>`).join('') : '';
+      document.getElementById('streamBtn').setAttribute('data-stream-link', movie.streamLink || '#');
+      document.getElementById('telegramBtn').setAttribute('data-telegram-link', movie.telegramLink || "#");
+      document.getElementById('movieModal').classList.add('show');
+      document.body.classList.add('modal-open');
     }
-    function openModal(movie){
-      const full=movie.plot||"No description available"; const plotEl=document.getElementById('modalPlot'); const toggle=document.getElementById('togglePlot'); let expanded=false; const short=full.length>100?full.substring(0,100)+"...":full;
-      plotEl.innerText=short; toggle.style.display=full.length>100?"inline-block":"none"; toggle.innerText="Show More ▼"; toggle.onclick=()=>{ expanded=!expanded; plotEl.innerText=expanded?full:short; toggle.innerText=expanded?"Show Less ▲":"Show More ▼"; };
-      document.getElementById('modalTitle').innerText=movie.title; document.getElementById('modalPoster').src=movie.poster; document.getElementById('modalRating').innerText=movie.rating||"N/A"; document.getElementById('modalYearText').innerText="("+movie.year+")"; document.getElementById('modalAge').innerText=movie.age||"U/A"; document.getElementById('modalDuration').innerText=movie.duration||"-"; document.getElementById('modalType').innerText=movie.type||"-"; document.getElementById('modalDirector').innerText=movie.director||"-"; document.getElementById('modalRelease').innerText=movie.released||"-";
-      let langVal=movie.language?(Array.isArray(movie.language)?movie.language.join(", "):movie.language):"-"; document.getElementById('modalLanguage').innerText=langVal; document.getElementById('modalQuality').innerText=movie.quality||"-";
-      document.getElementById('modalGenres').innerHTML=movie.genres?movie.genres.map(g=>`<span>${g}</span>`).join(''):'';
-      document.getElementById('streamBtn').setAttribute('data-stream-link',movie.streamLink||'#'); document.getElementById('telegramBtn').setAttribute('data-telegram-link',movie.telegramLink||"#");
-      document.getElementById('movieModal').classList.add('show'); document.body.classList.add('modal-open');
+
+    function closeModal() {
+      document.getElementById('movieModal').classList.remove('show');
+      document.body.classList.remove('modal-open');
     }
-    function closeModal(){ document.getElementById('movieModal').classList.remove('show'); document.body.classList.remove('modal-open'); }
-    function renderAll(){ renderSection('popularMovies',movieData.popular,false); renderSection('upcomingMovies',movieData.upcoming,true); renderSection('webSeries',movieData.webSeries,false); }
-    function initBanner(){
-      const container=document.getElementById('bannerSlide'), dots=document.getElementById('bannerDots'); if(!container) return; const slides=movieData.bannerSlides; if(!slides?.length) return; container.innerHTML='';
-      slides.forEach(s=>{ const div=document.createElement('div'); div.className='banner-item'; div.style.backgroundImage=`url('${s.poster}')`; div.innerHTML=`<div class="banner-content"><h1>${s.title}</h1><p>${s.year} • ${s.type}</p><button class="banner-watch-btn" data-title="${s.title}">Watch Now</button></div>`; container.appendChild(div); });
-      const total=slides.length; container.appendChild(container.children[0].cloneNode(true)); container.insertBefore(container.children[total-1].cloneNode(true),container.children[0]); container.style.transform='translateX(-100%)';
-      dots.innerHTML=''; slides.forEach((_,i)=>{ const d=document.createElement('div'); d.classList.add('banner-dot'); if(i===0)d.classList.add('active'); d.addEventListener('click',()=>goToSlide(i)); dots.appendChild(d); });
-      let currentIndex=0, auto; function updateDots(){ const real=((currentIndex%total)+total)%total; document.querySelectorAll('.banner-dot').forEach((d,i)=>{ if(i===real)d.classList.add('active'); else d.classList.remove('active'); }); }
-      function goToSlide(idx){ currentIndex=idx; container.style.transition='transform 0.6s ease'; container.style.transform=`translateX(-${(currentIndex+1)*100}%)`; updateDots(); }
-      function next(){ currentIndex++; container.style.transition='transform 0.6s ease'; container.style.transform=`translateX(-${(currentIndex+1)*100}%)`; }
-      function prev(){ currentIndex--; container.style.transition='transform 0.6s ease'; container.style.transform=`translateX(-${(currentIndex+1)*100}%)`; }
-      function resetTimer(){ if(auto) clearInterval(auto); auto=setInterval(()=>next(),4000); }
-      container.addEventListener('transitionend',()=>{ if(currentIndex>=total){ container.style.transition='none'; currentIndex=0; container.style.transform='translateX(-100%)'; updateDots(); } else if(currentIndex<0){ container.style.transition='none'; currentIndex=total-1; container.style.transform=`translateX(-${(currentIndex+1)*100}%)`; updateDots(); } updateDots(); });
-      document.getElementById('arrowLeft')?.addEventListener('click',()=>{ prev(); resetTimer(); }); document.getElementById('arrowRight')?.addEventListener('click',()=>{ next(); resetTimer(); }); resetTimer();
+
+    function renderAll() {
+      renderSection('popularMovies', movieData.popular, false);
+      renderSection('upcomingMovies', movieData.upcoming, true);
+      renderSection('webSeries', movieData.webSeries, false);
     }
-    function initSearch(){
-      const input=document.getElementById('searchInput'), home=document.getElementById('homepageContent'), searchCont=document.getElementById('searchResultsContainer'), grid=document.getElementById('searchResultsGrid');
-      input.addEventListener('input',function(){ const val=this.value.toLowerCase().trim(); if(val===''){ home.style.display='block'; searchCont.style.display='none'; return; } home.style.display='none'; searchCont.style.display='block'; const all=[...movieData.popular,...movieData.upcoming,...movieData.webSeries]; const matches=all.filter(m=>m.title.toLowerCase().includes(val)); grid.innerHTML=''; if(!matches.length){ grid.innerHTML='<div class="no-results">No matching movies or series found</div>'; return; } matches.forEach(m=>{ const card=document.createElement('div'); card.className='search-result-card'; card.innerHTML=`<img src="${m.poster}" onerror="this.src='https://via.placeholder.com/120x180?text=No+Image'"><div class="title">${m.title}<br><span class="year">(${m.year})</span></div>`; card.addEventListener('click',()=>openModal(m)); grid.appendChild(card); }); });
+
+    function initBanner() {
+      const container = document.getElementById('bannerSlide'),
+        dots = document.getElementById('bannerDots');
+      if (!container) return;
+      const slides = movieData.bannerSlides;
+      if (!slides?.length) return;
+      container.innerHTML = '';
+      slides.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'banner-item';
+        div.style.backgroundImage = `url('${s.poster}')`;
+        div.innerHTML = `<div class="banner-content"><h1>${s.title}</h1><p>${s.year} • ${s.type}</p><button class="banner-watch-btn" data-title="${s.title}">Watch Now</button></div>`;
+        container.appendChild(div);
+      });
+      const total = slides.length;
+      container.appendChild(container.children[0].cloneNode(true));
+      container.insertBefore(container.children[total - 1].cloneNode(true), container.children[0]);
+      container.style.transform = 'translateX(-100%)';
+      dots.innerHTML = '';
+      slides.forEach((_, i) => {
+        const d = document.createElement('div');
+        d.classList.add('banner-dot');
+        if (i === 0) d.classList.add('active');
+        d.addEventListener('click', () => goToSlide(i));
+        dots.appendChild(d);
+      });
+      let currentIndex = 0,
+        auto;
+
+      function updateDots() {
+        const real = ((currentIndex % total) + total) % total;
+        document.querySelectorAll('.banner-dot').forEach((d, i) => {
+          if (i === real) d.classList.add('active');
+          else d.classList.remove('active');
+        });
+      }
+
+      function goToSlide(idx) {
+        currentIndex = idx;
+        container.style.transition = 'transform 0.6s ease';
+        container.style.transform = `translateX(-${(currentIndex+1)*100}%)`;
+        updateDots();
+      }
+
+      function next() {
+        currentIndex++;
+        container.style.transition = 'transform 0.6s ease';
+        container.style.transform = `translateX(-${(currentIndex+1)*100}%)`;
+      }
+
+      function prev() {
+        currentIndex--;
+        container.style.transition = 'transform 0.6s ease';
+        container.style.transform = `translateX(-${(currentIndex+1)*100}%)`;
+      }
+
+      function resetTimer() {
+        if (auto) clearInterval(auto);
+        auto = setInterval(() => next(), 4000);
+      }
+      container.addEventListener('transitionend', () => {
+        if (currentIndex >= total) {
+          container.style.transition = 'none';
+          currentIndex = 0;
+          container.style.transform = 'translateX(-100%)';
+          updateDots();
+        } else if (currentIndex < 0) {
+          container.style.transition = 'none';
+          currentIndex = total - 1;
+          container.style.transform = `translateX(-${(currentIndex+1)*100}%)`;
+          updateDots();
+        }
+        updateDots();
+      });
+      document.getElementById('arrowLeft')?.addEventListener('click', () => {
+        prev();
+        resetTimer();
+      });
+      document.getElementById('arrowRight')?.addEventListener('click', () => {
+        next();
+        resetTimer();
+      });
+      resetTimer();
     }
-    function initLanguageFilter(){
-      document.querySelectorAll('#languageRow .card').forEach(card=>{ card.addEventListener('click',()=>{ const lang=card.getAttribute('data-lang'); const titles={hindi:'Hindi Movies',english:'English Movies',tamil:'Tamil Movies',telugu:'Telugu Movies',malayalam:'Malayalam Movies',kannada:'Kannada Movies'}; document.getElementById('langModalTitle').innerText=titles[lang]||'Movies'; const all=[...movieData.popular,...movieData.upcoming,...movieData.webSeries]; const filtered=all.filter(m=>{ if(!m.language) return false; const langs=Array.isArray(m.language)?m.language:[m.language]; return langs.some(l=>l.toLowerCase()===lang.toLowerCase()); }); const cont=document.getElementById('languageMoviesList'); cont.innerHTML=''; if(!filtered.length){ cont.innerHTML='<div style="padding:20px;text-align:center">No movies</div>'; return; } filtered.forEach(m=>{ const div=document.createElement('div'); div.className='lang-movie-card'; div.innerHTML=`<img src="${m.poster}"><div class="title">${m.title}<br><span class="year">(${m.year})</span></div>`; div.addEventListener('click',()=>openModal(m)); cont.appendChild(div); }); document.getElementById('languageModal').classList.add('show'); document.body.classList.add('modal-open'); }); });
-      document.getElementById('closeLangModal')?.addEventListener('click',()=>{ document.getElementById('languageModal').classList.remove('show'); document.body.classList.remove('modal-open'); });
-      document.getElementById('languageModal')?.addEventListener('click',(e)=>{ if(e.target===document.getElementById('languageModal')){ document.getElementById('languageModal').classList.remove('show'); document.body.classList.remove('modal-open'); } });
+
+    function initSearch() {
+      const input = document.getElementById('searchInput'),
+        home = document.getElementById('homepageContent'),
+        searchCont = document.getElementById('searchResultsContainer'),
+        grid = document.getElementById('searchResultsGrid');
+      input.addEventListener('input', function() {
+        const val = this.value.toLowerCase().trim();
+        if (val === '') {
+          home.style.display = 'block';
+          searchCont.style.display = 'none';
+          return;
+        }
+        home.style.display = 'none';
+        searchCont.style.display = 'block';
+        const all = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
+        const matches = all.filter(m => m.title.toLowerCase().includes(val));
+        grid.innerHTML = '';
+        if (!matches.length) {
+          grid.innerHTML = '<div class="no-results">No matching movies or series found</div>';
+          return;
+        }
+        matches.forEach(m => {
+          const card = document.createElement('div');
+          card.className = 'search-result-card';
+          card.innerHTML = `<img src="${m.poster}" onerror="this.src='https://via.placeholder.com/120x180?text=No+Image'"><div class="title">${m.title}<br><span class="year">(${m.year})</span></div>`;
+          card.addEventListener('click', () => openModal(m));
+          grid.appendChild(card);
+        });
+      });
     }
-    function initMoreButtons(){ document.querySelectorAll('.more-btn').forEach(btn=>{ btn.addEventListener('click',()=>{ const t=document.getElementById(btn.getAttribute('data-target')); if(t) t.scrollLeft+=260; }); }); }
-    function initBottomNav(){
-      document.querySelectorAll('.bottomnav .menu').forEach(menu=>{ menu.addEventListener('click',()=>{ const nav=menu.getAttribute('data-nav'); if(nav==='request'){ document.getElementById('requestModal').classList.add('show'); document.body.classList.add('modal-open'); return; } if(nav==='tv'||nav==='games'){ showToast('Coming Soon..!'); return; } if(nav==='home'){ document.querySelectorAll('.bottomnav .menu').forEach(m=>m.classList.remove('active-bar')); menu.classList.add('active-bar'); window.scrollTo({top:0,behavior:'smooth'}); } }); }); setTimeout(()=>{ document.querySelector('.bottomnav .menu[data-nav="home"]')?.classList.add('active-bar'); },100);
+
+    function initLanguageFilter() {
+      document.querySelectorAll('#languageRow .card').forEach(card => {
+        card.addEventListener('click', () => {
+          const lang = card.getAttribute('data-lang');
+          const titles = {
+            hindi: 'Hindi Movies',
+            english: 'English Movies',
+            tamil: 'Tamil Movies',
+            telugu: 'Telugu Movies',
+            malayalam: 'Malayalam Movies',
+            kannada: 'Kannada Movies'
+          };
+          document.getElementById('langModalTitle').innerText = titles[lang] || 'Movies';
+          const all = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
+          const filtered = all.filter(m => {
+            if (!m.language) return false;
+            const langs = Array.isArray(m.language) ? m.language : [m.language];
+            return langs.some(l => l.toLowerCase() === lang.toLowerCase());
+          });
+          const cont = document.getElementById('languageMoviesList');
+          cont.innerHTML = '';
+          if (!filtered.length) {
+            cont.innerHTML = '<div style="padding:20px;text-align:center">No movies</div>';
+            return;
+          }
+          filtered.forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'lang-movie-card';
+            div.innerHTML = `<img src="${m.poster}"><div class="title">${m.title}<br><span class="year">(${m.year})</span></div>`;
+            div.addEventListener('click', () => openModal(m));
+            cont.appendChild(div);
+          });
+          document.getElementById('languageModal').classList.add('show');
+          document.body.classList.add('modal-open');
+        });
+      });
+      document.getElementById('closeLangModal')?.addEventListener('click', () => {
+        document.getElementById('languageModal').classList.remove('show');
+        document.body.classList.remove('modal-open');
+      });
+      document.getElementById('languageModal')?.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('languageModal')) {
+          document.getElementById('languageModal').classList.remove('show');
+          document.body.classList.remove('modal-open');
+        }
+      });
     }
-    function initTelegramStream(){
-      const tele=document.getElementById('telegramBtn'), stream=document.getElementById('streamBtn');
-      const newTele=tele.cloneNode(true); tele.parentNode.replaceChild(newTele,tele); newTele.addEventListener('click',()=>{ const link=newTele.getAttribute('data-telegram-link')||'#'; showLoadingAndRedirect(link,'Telegram Files'); });
-      const newStream=stream.cloneNode(true); stream.parentNode.replaceChild(newStream,stream); newStream.addEventListener('click',()=>{ const link=newStream.getAttribute('data-stream-link')||'#'; showLoadingAndRedirect(link,'Stream'); });
+
+    function initMoreButtons() {
+      document.querySelectorAll('.more-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const t = document.getElementById(btn.getAttribute('data-target'));
+          if (t) t.scrollLeft += 260;
+        });
+      });
     }
-    function initRequest(){
-      const modal=document.getElementById('requestModal'), send=document.getElementById('sendRequestBtn');
-      document.getElementById('closeRequestModal').addEventListener('click',()=>{ modal.classList.remove('show'); document.body.classList.remove('modal-open'); });
-      modal.addEventListener('click',(e)=>{ if(e.target===modal){ modal.classList.remove('show'); document.body.classList.remove('modal-open'); } });
-      const newSend=send.cloneNode(true); send.parentNode.replaceChild(newSend,send); newSend.addEventListener('click',async()=>{ const name=document.getElementById('reqName').value.trim(), year=document.getElementById('reqYear').value.trim(), note=document.getElementById('reqNote').value.trim(); if(!name) return showToast('Enter movie name'); try{ const res=await fetch('/api/send-request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,year,note})}); const data=await res.json(); if(data.success){ showToast('Request sent ✅'); document.getElementById('reqName').value=''; document.getElementById('reqYear').value=''; document.getElementById('reqNote').value=''; modal.classList.remove('show'); document.body.classList.remove('modal-open'); } else showToast('Error sending'); }catch(e){ showToast('Server error'); } });
+
+    function initBottomNav() {
+      document.querySelectorAll('.bottomnav .menu').forEach(menu => {
+        menu.addEventListener('click', () => {
+          const nav = menu.getAttribute('data-nav');
+          if (nav === 'request') {
+            document.getElementById('requestModal').classList.add('show');
+            document.body.classList.add('modal-open');
+            return;
+          }
+          if (nav === 'tv' || nav === 'games') {
+            showToast('Coming Soon..!');
+            return;
+          }
+          if (nav === 'home') {
+            document.querySelectorAll('.bottomnav .menu').forEach(m => m.classList.remove('active-bar'));
+            menu.classList.add('active-bar');
+            window.scrollTo({
+              top: 0,
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+      setTimeout(() => {
+        document.querySelector('.bottomnav .menu[data-nav="home"]')?.classList.add('active-bar');
+      }, 100);
     }
-    function initTheme(){
-      const btn=document.getElementById('themeToggle'), body=document.body; if(localStorage.getItem('theme')==='dark'){ body.classList.add('dark-mode'); btn.innerHTML='☀️'; }
-      btn.addEventListener('click',()=>{ body.classList.toggle('dark-mode'); if(body.classList.contains('dark-mode')){ btn.innerHTML='☀️'; localStorage.setItem('theme','dark'); }else{ btn.innerHTML='🌙'; localStorage.setItem('theme','light'); } });
+
+    function initTelegramStream() {
+      const tele = document.getElementById('telegramBtn'),
+        stream = document.getElementById('streamBtn');
+      const newTele = tele.cloneNode(true);
+      tele.parentNode.replaceChild(newTele, tele);
+      newTele.addEventListener('click', () => {
+        const link = newTele.getAttribute('data-telegram-link') || '#';
+        showLoadingAndRedirect(link, 'Telegram Files');
+      });
+      const newStream = stream.cloneNode(true);
+      stream.parentNode.replaceChild(newStream, stream);
+      newStream.addEventListener('click', () => {
+        const link = newStream.getAttribute('data-stream-link') || '#';
+        showLoadingAndRedirect(link, 'Stream');
+      });
     }
-    document.getElementById('closeModalBtn').addEventListener('click',closeModal);
-    document.getElementById('movieModal').addEventListener('click',(e)=>{ if(e.target===document.getElementById('movieModal')) closeModal(); });
-    const langModalDiv=document.createElement('div'); langModalDiv.id='languageModal'; langModalDiv.className='movie-modal'; langModalDiv.innerHTML=`<div class="modal-card"><div class="close-modal" id="closeLangModal">✕</div><h2 id="langModalTitle" style="text-align:center;padding:25px 20px 10px;">Movies</h2><div id="languageMoviesList" class="language-movies-list"></div></div>`;
+
+    function initRequest() {
+      const modal = document.getElementById('requestModal'),
+        send = document.getElementById('sendRequestBtn');
+      document.getElementById('closeRequestModal').addEventListener('click', () => {
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+      });
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('show');
+          document.body.classList.remove('modal-open');
+        }
+      });
+      const newSend = send.cloneNode(true);
+      send.parentNode.replaceChild(newSend, send);
+      newSend.addEventListener('click', async () => {
+        const name = document.getElementById('reqName').value.trim(),
+          year = document.getElementById('reqYear').value.trim(),
+          note = document.getElementById('reqNote').value.trim();
+        if (!name) return showToast('Enter movie name');
+        try {
+          const res = await fetch('/api/send-request', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              name,
+              year,
+              note
+            })
+          });
+          const data = await res.json();
+          if (data.success) {
+            showToast('Request sent ✅');
+            document.getElementById('reqName').value = '';
+            document.getElementById('reqYear').value = '';
+            document.getElementById('reqNote').value = '';
+            modal.classList.remove('show');
+            document.body.classList.remove('modal-open');
+          } else showToast('Error sending');
+        } catch (e) {
+          showToast('Server error');
+        }
+      });
+    }
+
+    function initTheme() {
+      const btn = document.getElementById('themeToggle'),
+        body = document.body;
+      if (localStorage.getItem('theme') === 'dark') {
+        body.classList.add('dark-mode');
+        btn.innerHTML = '☀️';
+      }
+      btn.addEventListener('click', () => {
+        body.classList.toggle('dark-mode');
+        if (body.classList.contains('dark-mode')) {
+          btn.innerHTML = '☀️';
+          localStorage.setItem('theme', 'dark');
+        } else {
+          btn.innerHTML = '🌙';
+          localStorage.setItem('theme', 'light');
+        }
+      });
+    }
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    document.getElementById('movieModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('movieModal')) closeModal();
+    });
+    const langModalDiv = document.createElement('div');
+    langModalDiv.id = 'languageModal';
+    langModalDiv.className = 'movie-modal';
+    langModalDiv.innerHTML = `<div class="modal-card"><div class="close-modal" id="closeLangModal">✕</div><h2 id="langModalTitle" style="text-align:center;padding:25px 20px 10px;">Movies</h2><div id="languageMoviesList" class="language-movies-list"></div></div>`;
     document.body.appendChild(langModalDiv);
-    loadMovies(); initRequest(); initSearch(); initLanguageFilter(); initMoreButtons(); initBottomNav(); initTheme();
+    loadMovies();
+    initRequest();
+    initSearch();
+    initLanguageFilter();
+    initMoreButtons();
+    initBottomNav();
+    initTheme();
   </script>
 </body>
+
 </html>
