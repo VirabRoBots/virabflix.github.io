@@ -578,6 +578,7 @@
       bottom: 0;
       height: 100%;
       object-fit: cover;
+      pointer-events: none;
     }
 
     .language-row .card span {
@@ -590,6 +591,25 @@
       color: white;
       text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
       z-index: 2;
+    }
+
+    .language-row .card[data-lang="hindi"] span {
+      font-size: 28px;
+    }
+
+    .language-row .card[data-lang="kannada"] span {
+      font-size: 24px;
+    }
+
+    .language-row .card[data-lang="english"] span {
+      font-size: 25px;
+      top: 50%;
+      left: 6px;
+    }
+
+    .language-row .card[data-lang="telugu"] span {
+      font-size: 30px;
+      left: 6px;
     }
 
     .kannada {
@@ -614,6 +634,31 @@
 
     .telugu {
       background: linear-gradient(90deg, #11998e, #38ef7d);
+    }
+
+    .language-row .card .sudeepa {
+      transform: scale(1.2);
+      left: 75px;
+      transform-origin: center;
+    }
+
+    .language-row .card .srk {}
+
+    .language-row .card .en {
+      transform: scale(1.5) translateY(12%);
+      translate: 35px;
+      transform-origin: center;
+    }
+
+    .language-row .card .tv {
+      transform: scale(1.45) translateY(13%);
+      left: 89px;
+      transform-origin: center;
+    }
+
+    .language-row .card .ff {
+      transform: scale(1.1);
+      left: 98px;
     }
 
     .language-movies-list {
@@ -697,7 +742,6 @@
       .language-row .card {
         min-width: 180px;
       }
-    }
   </style>
 </head>
 
@@ -728,12 +772,12 @@
       <h2>| Choose Your Language</h2>
     </div>
     <div class="language-row" id="languageRow">
-      <div class="card kannada" data-lang="kannada"><span>ಕನ್ನಡ</span><img src="https://www.image2url.com/r2/default/images/1776715936624-e53340a4-66c8-4104-a942-a20d8aa533ee.png"></div>
-      <div class="card hindi" data-lang="hindi"><span>हिंदी</span><img src="https://www.image2url.com/r2/default/images/1776717612181-0f8268ad-591c-46d4-8adf-ea577d205959.png"></div>
-      <div class="card english" data-lang="english"><span>English</span><img src="https://www.image2url.com/r2/default/images/1776718293227-f1960e37-5291-4052-be0b-4a02a4a6d87a.png"></div>
-      <div class="card telugu" data-lang="telugu"><span>తెలుగు</span><img src="https://www.image2url.com/r2/default/images/1776719301668-0a4ba4ab-ced6-4e6c-a7f0-6e0a4a76da7a.png"></div>
-      <div class="card tamil" data-lang="tamil"><span>தமிழ்</span><img src="https://www.image2url.com/r2/default/images/1776719972455-8a409913-0c21-441a-b744-5be686269d0f.png"></div>
-      <div class="card malayalam" data-lang="malayalam"><span>മലയാളം</span><img src="https://www.image2url.com/r2/default/images/1776720753135-d39df1b5-fc64-4d74-890b-81299618e917.png"></div>
+      <div class="card kannada" data-lang="kannada"><span>ಕನ್ನಡ</span><img src="https://www.image2url.com/r2/default/images/1776715936624-e53340a4-66c8-4104-a942-a20d8aa533ee.png" class="sudeepa"></div>
+      <div class="card hindi" data-lang="hindi"><span>हिंदी</span><img src="https://www.image2url.com/r2/default/images/1776800423275-b9f1e813-5d6e-42e8-ac1d-f33e7db21b9a.png" class="srk"></div>
+      <div class="card english" data-lang="english"><span>English</span><img src="https://www.image2url.com/r2/default/images/1776718293227-f1960e37-5291-4052-be0b-4a02a4a6d87a.png" class="en"></div>
+      <div class="card telugu" data-lang="telugu"><span>తెలుగు</span><img src="https://www.image2url.com/r2/default/images/1776719301668-0a4ba4ab-ced6-4e6c-a7f0-6e0a4a76da7a.png" class="aa"></div>
+      <div class="card tamil" data-lang="tamil"><span>தமிழ்</span><img src="https://www.image2url.com/r2/default/images/1776719972455-8a409913-0c21-441a-b744-5be686269d0f.png" class="tv"></div>
+      <div class="card malayalam" data-lang="malayalam"><span>മലയാളം</span><img src="https://www.image2url.com/r2/default/images/1776720753135-d39df1b5-fc64-4d74-890b-81299618e917.png" class="ff"></div>
     </div>
     <div class="section-header">
       <h2>| Upcoming Movies</h2><span class="more-btn" data-target="upcomingMovies">+ More</span>
