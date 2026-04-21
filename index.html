@@ -687,6 +687,100 @@
         width: 100px;
         height: 150px;
       }
+
+      .language-row {
+        display: flex;
+        overflow-x: auto;
+        gap: 15px;
+        padding: 10px 15px;
+        scroll-behavior: smooth;
+      }
+
+      .language-row::-webkit-scrollbar {
+        display: none;
+      }
+
+      .language-row .card {
+        min-width: 200px;
+        height: 100px;
+        border-radius: 16px;
+        position: relative;
+        flex-shrink: 0;
+        cursor: pointer;
+        overflow: hidden;
+        transition: transform 0.3s;
+      }
+
+      .language-row .card:hover {
+        transform: scale(1.05);
+      }
+
+      .language-row .card img {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .language-row .card span {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 22px;
+        font-weight: bold;
+      }
+
+      /* Gradients */
+      .kannada {
+        background: linear-gradient(90deg, #ff512f, #dd2476);
+      }
+
+      .english {
+        background: linear-gradient(90deg, #4facfe, #00f2fe);
+      }
+
+      .malayalam {
+        background: linear-gradient(90deg, #7F00FF, #E100FF);
+      }
+
+      .hindi {
+        background: linear-gradient(90deg, #f7971e, #ffd200);
+      }
+
+      .tamil {
+        background: linear-gradient(90deg, #f857a6, #ff5858);
+      }
+
+      .telugu {
+        background: linear-gradient(90deg, #11998e, #38ef7d);
+      }
+
+      /* Image adjustments */
+      .sudeepa {
+        transform: scale(1.9);
+        left: 100px;
+      }
+
+      .srk {
+        transform: scale(2) translateY(23%);
+      }
+
+      .en {
+        transform: scale(1.5) translateY(12%);
+        left: 55px;
+      }
+
+      .tv {
+        transform: scale(1.9) translateY(17%);
+        left: 100px;
+      }
+
+      .ff {
+        transform: scale(1.1);
+        left: 70px;
+      }
     }
   </style>
 </head>
@@ -715,15 +809,41 @@
     </div>
     <div class="movies" id="popularMovies"></div>
     <div class="section-header">
-      <h2>| Select Language</h2>
+      <h2>| Choose Your Language</h2>
     </div>
-    <div class="language-container">
-      <button class="lang-btn" data-lang="hindi">Hindi</button>
-      <button class="lang-btn" data-lang="english">English</button>
-      <button class="lang-btn" data-lang="tamil">Tamil</button>
-      <button class="lang-btn" data-lang="telugu">Telugu</button>
-      <button class="lang-btn" data-lang="malayalam">Malayalam</button>
-      <button class="lang-btn" data-lang="kannada">Kannada</button>
+
+    <div class="language-row" id="languageRow">
+
+      <div class="card kannada" data-lang="kannada">
+        <span>ಕನ್ನಡ</span>
+        <img src="https://www.image2url.com/r2/default/images/1776715936624-e53340a4-66c8-4104-a942-a20d8aa533ee.png" class="sudeepa">
+      </div>
+
+      <div class="card hindi" data-lang="hindi">
+        <span>हिंदी</span>
+        <img src="https://www.image2url.com/r2/default/images/1776717612181-0f8268ad-591c-46d4-8adf-ea577d205959.png" class="srk">
+      </div>
+
+      <div class="card english" data-lang="english">
+        <span>English</span>
+        <img src="https://www.image2url.com/r2/default/images/1776718293227-f1960e37-5291-4052-be0b-4a02a4a6d87a.png" class="en">
+      </div>
+
+      <div class="card telugu" data-lang="telugu">
+        <span>తెలుగు</span>
+        <img src="https://www.image2url.com/r2/default/images/1776719301668-0a4ba4ab-ced6-4e6c-a7f0-6e0a4a76da7a.png">
+      </div>
+
+      <div class="card tamil" data-lang="tamil">
+        <span>தமிழ்</span>
+        <img src="https://www.image2url.com/r2/default/images/1776719972455-8a409913-0c21-441a-b744-5be686269d0f.png" class="tv">
+      </div>
+
+      <div class="card malayalam" data-lang="malayalam">
+        <span>മലയാളം</span>
+        <img src="https://www.image2url.com/r2/default/images/1776720753135-d39df1b5-fc64-4d74-890b-81299618e917.png" class="ff">
+      </div>
+
     </div>
     <div id="languageModal" class="movie-modal">
       <div class="modal-card">
@@ -844,7 +964,12 @@
         if (seconds <= 0) {
           clearInterval(timer);
           loadingDiv.remove();
-          window.location.href = link;
+          const isTelegram = /Telegram/i.test(navigator.userAgent);
+          if (isTelegram) {
+            window.location.href = link;
+          } else {
+            window.open(link, '_blank');
+          }
         }
       }, 1000);
       const cancelBtn = document.getElementById('cancelLoading');
@@ -1096,9 +1221,9 @@
     }
 
     function initLanguageFilter() {
-      document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const lang = btn.getAttribute('data-lang');
+      document.querySelectorAll('#languageRow .card').forEach(card => {
+        card.addEventListener('click', () => {
+          const lang = card.getAttribute('data-lang');
           const titles = {
             hindi: 'Hindi Movies',
             english: 'English Movies',
@@ -1112,7 +1237,7 @@
           const filtered = all.filter(m => {
             if (!m.language) return false;
             const langs = Array.isArray(m.language) ? m.language : [m.language];
-            return langs.some(l => l.trim().toLowerCase() === lang.toLowerCase());
+            return langs.some(l => l.toLowerCase() === lang.toLowerCase());
           });
           const container = document.getElementById('languageMoviesList');
           container.innerHTML = '';
@@ -1121,26 +1246,30 @@
             return;
           }
           filtered.forEach(m => {
-            const card = document.createElement('div');
-            card.className = 'lang-movie-card';
-            card.innerHTML = `<img src="${m.poster}" onerror="this.src='https://via.placeholder.com/100x150?text=No+Image'"><div class="title">${m.title}<br><span class="year">(${m.year})</span></div>`;
-            card.addEventListener('click', () => openModal(m));
-            container.appendChild(card);
+            const div = document.createElement('div');
+            div.className = 'lang-movie-card';
+            div.innerHTML = `
+          <img src="${m.poster}">
+          <div class="title">${m.title}<br><span class="year">(${m.year})</span></div>
+        `;
+            div.addEventListener('click', () => openModal(m));
+            container.appendChild(div);
           });
           document.getElementById('languageModal').classList.add('show');
           document.body.classList.add('modal-open');
         });
       });
-      document.getElementById('closeLangModal')?.addEventListener('click', () => {
+    
+    document.getElementById('closeLangModal')?.addEventListener('click', () => {
+      document.getElementById('languageModal').classList.remove('show');
+      document.body.classList.remove('modal-open');
+    });
+    document.getElementById('languageModal')?.addEventListener('click', (e) => {
+      if (e.target === document.getElementById('languageModal')) {
         document.getElementById('languageModal').classList.remove('show');
         document.body.classList.remove('modal-open');
-      });
-      document.getElementById('languageModal')?.addEventListener('click', (e) => {
-        if (e.target === document.getElementById('languageModal')) {
-          document.getElementById('languageModal').classList.remove('show');
-          document.body.classList.remove('modal-open');
-        }
-      });
+      }
+    });
     }
 
     function initMoreButtons() {
