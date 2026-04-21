@@ -818,25 +818,27 @@
       div.innerHTML = `<div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:10001; display:flex; align-items:center; justify-content:center; flex-direction:column;">
     <div style="background:linear-gradient(45deg,#00c6ff,#0072ff); width:70px; height:70px; border-radius:50%; animation:pulse 1s ease-in-out infinite;"></div>
     <p style="color:white; margin-top:25px; font-weight:600;">Loading ${type}...</p>
-    <p style="color:#aaa;">Opening link in <span id="countdown" style="color:#00c6ff; font-weight:bold;">3</span>s</p><button id="cancelLoading" style="margin-top:30px; padding:8px 25px; border-radius:30px; background:#ff4757; color:white; cursor:pointer; border:none; outline:none;">Cancel</button>
+    <p style="color:#aaa;">Redirecting in <span id="countdown" style="color:#00c6ff; font-weight:bold; font-size:18px;">5</span> seconds</p>
+    <button id="cancelLoading" style="margin-top:30px; padding:8px 25px; border-radius:30px; background:#ff4757; color:white; cursor:pointer; border:none; outline:none;">Cancel</button>
   </div>
   <style>@keyframes pulse{0%{transform:scale(0.8);opacity:0.5;}70%{transform:scale(1.1);opacity:1;}100%{transform:scale(0.8);opacity:0.5;}}</style>`;
       document.body.appendChild(div);
-      let sec = 5,
-        cancelled = false;
+      let secondsLeft = 5;
+      let cancelled = false;
+      // Update countdown display immediately
+      const countdownEl = document.getElementById('countdown');
+      if (countdownEl) countdownEl.innerText = secondsLeft;
       const timer = setInterval(() => {
         if (cancelled) return;
-        sec--;
-        const el = document.getElementById('countdown');
-        if (el) el.innerText = sec;
-        if (sec <= 0) {
+        secondsLeft--;
+        if (countdownEl) countdownEl.innerText = secondsLeft;
+        if (secondsLeft <= 0) {
           clearInterval(timer);
           div.remove();
-          // Telegram fix - use try-catch and direct navigation
-          try {
+          const isTelegram = /Telegram/i.test(navigator.userAgent);
+          if (isTelegram) {
             window.location.href = link;
-          } catch (e) {
-            // Fallback for Telegram
+          } else {
             window.open(link, '_blank');
           }
         }
