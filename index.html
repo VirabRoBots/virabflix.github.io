@@ -835,10 +835,10 @@
         if (secondsLeft <= 0) {
           clearInterval(timer);
           div.remove();
-          const isTelegram = /Telegram/i.test(navigator.userAgent);
-          if (isTelegram) {
+          try {
             window.location.href = link;
-          } else {
+          } catch (e) {
+            // Fallback for Telegram
             window.open(link, '_blank');
           }
         }
