@@ -909,9 +909,11 @@
     }
 
     function openModal(movie) {
+      document.getElementById('languageModal').classList.remove('show');
       const full = movie.plot || "No description available";
       const plotEl = document.getElementById('modalPlot');
       const toggle = document.getElementById('togglePlot');
+      document.querySelector('#movieModal .modal-card').scrollTop = 0;
       let expanded = false;
       const short = full.length > 100 ? full.substring(0, 100) + "..." : full;
       plotEl.innerText = short;
