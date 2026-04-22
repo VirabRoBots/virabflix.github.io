@@ -12,6 +12,37 @@
       box-sizing: border-box;
     }
 
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Disable text selection on entire website */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    /* Allow text selection only on specific elements if needed (like search input) */
+    input,
+    textarea,
+    #searchInput {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+
+    /* Also disable long-press context menu on images */
+    img {
+      -webkit-touch-callout: none;
+      pointer-events: auto;
+    }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -899,6 +930,49 @@
         if (!res.ok) throw new Error();
         const data = await res.json();
         movieData = data;
+        // Auto URL sharing for movies
+        function updateUrlWithMovie(movieTitle) {
+          const slug = movieTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          const newUrl = `${window.location.pathname}?movie=${slug}`;
+          window.history.pushState({
+            movie: movieTitle
+          }, '', newUrl);
+        }
+
+        function checkUrlForMovie() {
+          const params = new URLSearchParams(window.location.search);
+          const movieSlug = params.get('movie');
+          if (movieSlug && movieData) {
+            const allMovies = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
+            const foundMovie = allMovies.find(m => {
+              const movieSlugCompare = m.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+              return movieSlugCompare === movieSlug;
+            });
+            if (foundMovie) {
+              setTimeout(() => openModal(foundMovie), 300);
+            }
+          }
+        }
+        // Override openModal to update URL
+        const originalOpenModal = openModal;
+        openModal = function(movie) {
+          originalOpenModal(movie);
+          updateUrlWithMovie(movie.title);
+        };
+        // Handle browser back/forward
+        window.addEventListener('popstate', (event) => {
+          if (event.state && event.state.movie) {
+            const allMovies = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
+            const movie = allMovies.find(m => m.title === event.state.movie);
+            if (movie) openModal(movie);
+          } else {
+            closeModal();
+          }
+        });
+        // Add this inside your loadMovies function right after movieData is set
+        // Find the line: const data = await response.json();
+        // Then add: movieData = data;
+        // Then add: checkUrlForMovie();
         renderAll();
         initBanner();
         setTimeout(() => {
