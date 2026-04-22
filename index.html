@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Cinemaniacs Hub | Movies & WebSeries</title>
+  <title>CinemaniacsHub</title>
   <style>
     * {
       margin: 0;
@@ -855,17 +855,7 @@
         window.cameFromLanguage = false;
       }
     }
-    window.addEventListener('popstate', function(event) {
-      let modal = document.getElementById('movieModal');
-      if (modal.classList.contains('show')) {
-        event.preventDefault();
-        event.stopPropagation();
-        closeModal();
-        window.history.pushState(null, null, window.location.pathname);
-        return false;
-      }
-    });
-    window.history.replaceState(null, null, window.location.pathname);
+    window.history.pushState(null, null, window.location.pathname);
     async function loadMovies() {
       try {
         let res = await fetch('movies.json');
@@ -1093,12 +1083,18 @@
     }
 
     function initBottomNav() {
+      // Store current page state
+      let currentPage = 'home';
       document.querySelectorAll('.bottomnav .menu').forEach(menu => {
         menu.addEventListener('click', () => {
           let nav = menu.getAttribute('data-nav');
           if (nav === 'request') {
             document.getElementById('requestModal').classList.add('show');
             document.body.classList.add('modal-open');
+            // Push state for request modal
+            window.history.pushState({
+              modal: 'request'
+            }, '', '?request');
             return;
           }
           if (nav === 'tv' || nav === 'games') {
@@ -1106,35 +1102,62 @@
             return;
           }
           if (nav === 'home') {
+            if (currentPage === 'home') {
+              window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+              });
+            } else {
+              // Return to home page
+              document.getElementById('homepageContent').style.display = 'block';
+              document.getElementById('searchResultsContainer').style.display = 'none';
+              currentPage = 'home';
+              window.history.pushState({
+                page: 'home'
+              }, '', window.location.pathname);
+            }
             document.querySelectorAll('.bottomnav .menu').forEach(m => m.classList.remove('active-bar'));
             menu.classList.add('active-bar');
-            window.scrollTo({
-              top: 0,
-              behavior: 'smooth'
-            });
           }
         });
+      });
+      // Handle back button for navigation
+      window.addEventListener('popstate', function(event) {
+        let requestModal = document.getElementById('requestModal');
+        let movieModal = document.getElementById('movieModal');
+        let langModal = document.getElementById('languageModal');
+        // Close request modal if open
+        if (requestModal && requestModal.classList.contains('show')) {
+          requestModal.classList.remove('show');
+          document.body.classList.remove('modal-open');
+          return false;
+        }
+        // Close movie modal if open
+        if (movieModal && movieModal.classList.contains('show')) {
+          movieModal.classList.remove('show');
+          document.body.classList.remove('modal-open');
+          let cleanUrl = `${window.location.origin}${window.location.pathname}`;
+          window.history.replaceState({}, '', cleanUrl);
+          return false;
+        }
+        // Close language modal if open
+        if (langModal && langModal.classList.contains('show')) {
+          langModal.classList.remove('show');
+          document.body.classList.remove('modal-open');
+          return false;
+        }
+        // If on search results, go back to home
+        let searchCont = document.getElementById('searchResultsContainer');
+        let homeContent = document.getElementById('homepageContent');
+        if (searchCont && searchCont.style.display === 'block') {
+          searchCont.style.display = 'none';
+          homeContent.style.display = 'block';
+          return false;
+        }
       });
       setTimeout(() => {
         document.querySelector('.bottomnav .menu[data-nav="home"]')?.classList.add('active-bar');
       }, 100);
-    }
-
-    function initTelegramStream() {
-      let tele = document.getElementById('telegramBtn'),
-        stream = document.getElementById('streamBtn');
-      let newTele = tele.cloneNode(true);
-      tele.parentNode.replaceChild(newTele, tele);
-      newTele.addEventListener('click', () => {
-        let link = newTele.getAttribute('data-telegram-link') || '#';
-        showLoadingAndRedirect(link, 'Telegram');
-      });
-      let newStream = stream.cloneNode(true);
-      stream.parentNode.replaceChild(newStream, stream);
-      newStream.addEventListener('click', () => {
-        let link = newStream.getAttribute('data-stream-link') || '#';
-        showLoadingAndRedirect(link, 'Stream');
-      });
     }
 
     function initRequest() {
