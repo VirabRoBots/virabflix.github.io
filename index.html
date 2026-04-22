@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -306,6 +305,10 @@
       z-index: 1000;
     }
 
+    body.dark-mode .bottomnav {
+      background: #1e293b;
+    }
+
     .menu {
       display: flex;
       justify-content: center;
@@ -536,6 +539,7 @@
       border-radius: 16px;
       position: relative;
       overflow: hidden;
+      cursor: pointer;
     }
 
     .language-row .card img {
@@ -755,28 +759,7 @@
         showToast(`${type} not available`);
         return;
       }
-      let div = document.createElement('div');
-      div.id = 'loadingOverlay';
-      div.innerHTML = `<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:10001;display:flex;align-items:center;justify-content:center;flex-direction:column;"><div style="background:linear-gradient(45deg,#00c6ff,#0072ff);width:70px;height:70px;border-radius:50%;animation:pulse 1s infinite;"></div><p style="color:white;margin-top:25px;">Loading ${type}...</p><p style="color:#aaa;">Redirecting <span id="countdown" style="color:#00c6ff;">5</span>s</p><button id="cancelLoading" style="margin-top:30px; padding:8px 25px; border-radius:30px; background:#ff4757; color:white; cursor:pointer; border:none; outline:none;">Cancel</button></div><style>@keyframes pulse{0%{transform:scale(0.8);opacity:0.5;}70%{transform:scale(1.1);opacity:1;}100%{transform:scale(0.8);opacity:0.5;}}</style>`;
-      document.body.appendChild(div);
-      let seconds = 5,
-        cancel = false;
-      let countdownEl = document.getElementById('countdown');
-      let timer = setInterval(() => {
-        if (cancel) return;
-        seconds--;
-        if (countdownEl) countdownEl.innerText = seconds;
-        if (seconds <= 0) {
-          clearInterval(timer);
-          div.remove();
-          window.location.href = link;
-        }
-      }, 1000);
-      document.getElementById('cancelLoading')?.addEventListener('click', () => {
-        cancel = true;
-        clearInterval(timer);
-        div.remove();
-      });
+      window.open(link, '_blank');
     }
 
     function renderSection(containerId, items) {
@@ -797,7 +780,6 @@
     }
 
     function openModal(movie) {
-      // Close language modal if open
       let langModal = document.getElementById('languageModal');
       if (langModal && langModal.classList.contains('show')) {
         langModal.classList.remove('show');
@@ -807,10 +789,7 @@
       if (modalCard) modalCard.scrollTop = 0;
       let movieSlug = movie.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       let shareableUrl = `${window.location.origin}${window.location.pathname}?movie=${movieSlug}`;
-      window.history.replaceState({
-        movie: movie.title,
-        modalOpen: true
-      }, '', shareableUrl);
+      window.history.pushState({ movie: movie.title, modalOpen: true }, '', shareableUrl);
       let full = movie.plot || "No description",
         plotEl = document.getElementById('modalPlot'),
         toggle = document.getElementById('togglePlot');
@@ -843,9 +822,12 @@
     function closeModal() {
       document.getElementById('movieModal').classList.remove('show');
       document.body.classList.remove('modal-open');
-      let cleanUrl = `${window.location.origin}${window.location.pathname}`;
-      window.history.replaceState({}, '', cleanUrl);
-      // Reopen language modal if we came from it
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        let cleanUrl = `${window.location.origin}${window.location.pathname}`;
+        window.history.replaceState({}, '', cleanUrl);
+      }
       if (window.cameFromLanguage) {
         let langModal = document.getElementById('languageModal');
         if (langModal && window.lastSelectedLanguage) {
@@ -855,7 +837,22 @@
         window.cameFromLanguage = false;
       }
     }
-    window.history.pushState(null, null, window.location.pathname);
+
+    function loadMovieFromUrl() {
+      let params = new URLSearchParams(window.location.search);
+      let movieSlug = params.get('movie');
+      if (movieSlug && movieData && movieData.popular && movieData.popular.length > 0) {
+        let allMovies = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
+        let foundMovie = allMovies.find(m => {
+          let slug = m.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          return slug === movieSlug;
+        });
+        if (foundMovie) {
+          setTimeout(() => openModal(foundMovie), 500);
+        }
+      }
+    }
+
     async function loadMovies() {
       try {
         let res = await fetch('movies.json');
@@ -865,6 +862,7 @@
         renderAll();
         initBanner();
         initSearch();
+        loadMovieFromUrl();
         setTimeout(() => {
           document.querySelectorAll('.banner-watch-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -890,6 +888,7 @@
         }, 100);
         initTelegramStream();
       } catch (e) {
+        console.error('Failed to load movies.json', e);
         document.getElementById('popularMovies').innerHTML = '<div style="padding:20px;text-align:center">⚠️ Failed to load movies.json</div>';
       }
     }
@@ -1083,7 +1082,6 @@
     }
 
     function initBottomNav() {
-      // Store current page state
       let currentPage = 'home';
       document.querySelectorAll('.bottomnav .menu').forEach(menu => {
         menu.addEventListener('click', () => {
@@ -1091,10 +1089,6 @@
           if (nav === 'request') {
             document.getElementById('requestModal').classList.add('show');
             document.body.classList.add('modal-open');
-            // Push state for request modal
-            window.history.pushState({
-              modal: 'request'
-            }, '', '?request');
             return;
           }
           if (nav === 'tv' || nav === 'games') {
@@ -1103,62 +1097,54 @@
           }
           if (nav === 'home') {
             if (currentPage === 'home') {
-              window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-              });
+              window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
-              // Return to home page
               document.getElementById('homepageContent').style.display = 'block';
               document.getElementById('searchResultsContainer').style.display = 'none';
               currentPage = 'home';
-              window.history.pushState({
-                page: 'home'
-              }, '', window.location.pathname);
             }
             document.querySelectorAll('.bottomnav .menu').forEach(m => m.classList.remove('active-bar'));
             menu.classList.add('active-bar');
           }
         });
       });
-      // Handle back button for navigation
-      window.addEventListener('popstate', function(event) {
-        let requestModal = document.getElementById('requestModal');
-        let movieModal = document.getElementById('movieModal');
-        let langModal = document.getElementById('languageModal');
-        // Close request modal if open
-        if (requestModal && requestModal.classList.contains('show')) {
-          requestModal.classList.remove('show');
-          document.body.classList.remove('modal-open');
-          return false;
-        }
-        // Close movie modal if open
-        if (movieModal && movieModal.classList.contains('show')) {
-          movieModal.classList.remove('show');
-          document.body.classList.remove('modal-open');
-          let cleanUrl = `${window.location.origin}${window.location.pathname}`;
-          window.history.replaceState({}, '', cleanUrl);
-          return false;
-        }
-        // Close language modal if open
-        if (langModal && langModal.classList.contains('show')) {
-          langModal.classList.remove('show');
-          document.body.classList.remove('modal-open');
-          return false;
-        }
-        // If on search results, go back to home
-        let searchCont = document.getElementById('searchResultsContainer');
-        let homeContent = document.getElementById('homepageContent');
-        if (searchCont && searchCont.style.display === 'block') {
-          searchCont.style.display = 'none';
-          homeContent.style.display = 'block';
-          return false;
-        }
-      });
       setTimeout(() => {
         document.querySelector('.bottomnav .menu[data-nav="home"]')?.classList.add('active-bar');
       }, 100);
     }
+
+    window.addEventListener('popstate', function(event) {
+      let requestModal = document.getElementById('requestModal');
+      let movieModal = document.getElementById('movieModal');
+      let langModal = document.getElementById('languageModal');
+      let searchCont = document.getElementById('searchResultsContainer');
+      let homeContent = document.getElementById('homepageContent');
+
+      if (requestModal && requestModal.classList.contains('show')) {
+        requestModal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        event.preventDefault();
+        return false;
+      }
+      if (movieModal && movieModal.classList.contains('show')) {
+        movieModal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        event.preventDefault();
+        return false;
+      }
+      if (langModal && langModal.classList.contains('show')) {
+        langModal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        event.preventDefault();
+        return false;
+      }
+      if (searchCont && searchCont.style.display === 'block') {
+        searchCont.style.display = 'none';
+        homeContent.style.display = 'block';
+        event.preventDefault();
+        return false;
+      }
+    });
 
     function initRequest() {
       let modal = document.getElementById('requestModal');
@@ -1184,6 +1170,27 @@
       });
     }
 
+    function initTelegramStream() {
+      let tele = document.getElementById('telegramBtn');
+      let stream = document.getElementById('streamBtn');
+      if (tele) {
+        let newTele = tele.cloneNode(true);
+        tele.parentNode.replaceChild(newTele, tele);
+        newTele.addEventListener('click', () => {
+          let link = newTele.getAttribute('data-telegram-link') || '#';
+          showLoadingAndRedirect(link, 'Telegram');
+        });
+      }
+      if (stream) {
+        let newStream = stream.cloneNode(true);
+        stream.parentNode.replaceChild(newStream, stream);
+        newStream.addEventListener('click', () => {
+          let link = newStream.getAttribute('data-stream-link') || '#';
+          showLoadingAndRedirect(link, 'Stream');
+        });
+      }
+    }
+
     function initTheme() {
       let btn = document.getElementById('themeToggle'),
         body = document.body;
@@ -1202,10 +1209,12 @@
         }
       });
     }
+
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);
     document.getElementById('movieModal').addEventListener('click', (e) => {
       if (e.target === document.getElementById('movieModal')) closeModal();
     });
+
     loadMovies();
     initRequest();
     initLanguageFilter();
