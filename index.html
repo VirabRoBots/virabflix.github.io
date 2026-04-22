@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -303,10 +304,6 @@
       border-radius: 25px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, .1);
       z-index: 1000;
-    }
-
-    body.dark-mode .bottomnav {
-      background: #1e293b;
     }
 
     .menu {
@@ -759,7 +756,34 @@
         showToast(`${type} not available`);
         return;
       }
-      window.open(link, '_blank');
+      let div = document.createElement('div');
+      div.id = 'loadingOverlay';
+      div.innerHTML = `<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:10001;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+    <div style="background:linear-gradient(45deg,#00c6ff,#0072ff);width:70px;height:70px;border-radius:50%;animation:pulse 1s infinite;"></div>
+    <p style="color:white;margin-top:25px;">Loading ${type}...</p>
+    <p style="color:#aaa;">Redirecting <span id="countdown" style="color:#00c6ff;font-size:18px;font-weight:bold;">5</span> seconds</p>
+    <button id="cancelLoading" style="margin-top:30px;padding:8px 25px;border-radius:30px;background:#ff4757;color:white;cursor:pointer;border:none;outline:none;font-weight:bold;">Cancel</button>
+  </div>
+  <style>@keyframes pulse{0%{transform:scale(0.8);opacity:0.5;}70%{transform:scale(1.1);opacity:1;}100%{transform:scale(0.8);opacity:0.5;}}</style>`;
+      document.body.appendChild(div);
+      let seconds = 5;
+      let cancel = false;
+      let countdownEl = document.getElementById('countdown');
+      let timer = setInterval(() => {
+        if (cancel) return;
+        seconds--;
+        if (countdownEl) countdownEl.innerText = seconds;
+        if (seconds <= 0) {
+          clearInterval(timer);
+          div.remove();
+          window.location.href = link;
+        }
+      }, 1000);
+      document.getElementById('cancelLoading')?.addEventListener('click', () => {
+        cancel = true;
+        clearInterval(timer);
+        div.remove();
+      });
     }
 
     function renderSection(containerId, items) {
@@ -789,7 +813,10 @@
       if (modalCard) modalCard.scrollTop = 0;
       let movieSlug = movie.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       let shareableUrl = `${window.location.origin}${window.location.pathname}?movie=${movieSlug}`;
-      window.history.pushState({ movie: movie.title, modalOpen: true }, '', shareableUrl);
+      window.history.replaceState({
+        movie: movie.title,
+        modalOpen: true
+      }, '', shareableUrl);
       let full = movie.plot || "No description",
         plotEl = document.getElementById('modalPlot'),
         toggle = document.getElementById('togglePlot');
@@ -828,13 +855,44 @@
         let cleanUrl = `${window.location.origin}${window.location.pathname}`;
         window.history.replaceState({}, '', cleanUrl);
       }
-      if (window.cameFromLanguage) {
-        let langModal = document.getElementById('languageModal');
-        if (langModal && window.lastSelectedLanguage) {
-          langModal.classList.add('show');
-          document.body.classList.add('modal-open');
-        }
-        window.cameFromLanguage = false;
+      // Reopen language modal if we came from it
+      if (window.cameFromLanguage && window.lastSelectedLanguage) {
+        setTimeout(() => {
+          let langModal = document.getElementById('languageModal');
+          if (langModal && window.lastSelectedLanguage) {
+            // Reopen with same language
+            let lang = window.lastSelectedLanguage;
+            let titles = {
+              hindi: 'Hindi Movies',
+              english: 'English Movies',
+              tamil: 'Tamil Movies',
+              telugu: 'Telugu Movies',
+              malayalam: 'Malayalam Movies',
+              kannada: 'Kannada Movies'
+            };
+            let all = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
+            let filtered = all.filter(m => {
+              if (!m.language) return false;
+              let langs = Array.isArray(m.language) ? m.language : [m.language];
+              return langs.some(l => l.toLowerCase() === lang.toLowerCase());
+            });
+            document.getElementById('langModalTitle').innerText = titles[lang] || 'Movies';
+            let cont = document.getElementById('languageMoviesList');
+            cont.innerHTML = '';
+            if (filtered.length) {
+              filtered.forEach(m => {
+                let div = document.createElement('div');
+                div.className = 'lang-movie-card';
+                div.innerHTML = `<img src="${m.poster}"><div class="title">${m.title}<br><span class="year">(${m.year})</span></div>`;
+                div.addEventListener('click', () => openModal(m));
+                cont.appendChild(div);
+              });
+            }
+            langModal.classList.add('show');
+            document.body.classList.add('modal-open');
+          }
+          window.cameFromLanguage = false;
+        }, 100);
       }
     }
 
@@ -852,7 +910,6 @@
         }
       }
     }
-
     async function loadMovies() {
       try {
         let res = await fetch('movies.json');
@@ -1097,7 +1154,10 @@
           }
           if (nav === 'home') {
             if (currentPage === 'home') {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+              });
             } else {
               document.getElementById('homepageContent').style.display = 'block';
               document.getElementById('searchResultsContainer').style.display = 'none';
@@ -1112,14 +1172,12 @@
         document.querySelector('.bottomnav .menu[data-nav="home"]')?.classList.add('active-bar');
       }, 100);
     }
-
     window.addEventListener('popstate', function(event) {
       let requestModal = document.getElementById('requestModal');
       let movieModal = document.getElementById('movieModal');
       let langModal = document.getElementById('languageModal');
       let searchCont = document.getElementById('searchResultsContainer');
       let homeContent = document.getElementById('homepageContent');
-
       if (requestModal && requestModal.classList.contains('show')) {
         requestModal.classList.remove('show');
         document.body.classList.remove('modal-open');
@@ -1209,12 +1267,10 @@
         }
       });
     }
-
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);
     document.getElementById('movieModal').addEventListener('click', (e) => {
       if (e.target === document.getElementById('movieModal')) closeModal();
     });
-
     loadMovies();
     initRequest();
     initLanguageFilter();
