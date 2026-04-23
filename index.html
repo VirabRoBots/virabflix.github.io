@@ -15,6 +15,13 @@
       user-select: none;
     }
 
+    img {
+      pointer-events: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
     input,
     #searchInput {
       user-select: text;
@@ -91,7 +98,7 @@
     #searchInput:focus {
       outline: none;
       border-color: #3b82f6;
-      width: 150px;
+      width: 120px;
     }
 
     #themeToggle {
@@ -504,8 +511,8 @@
     }
 
     .search-results-grid {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 15px;
       justify-content: flex-start;
     }
@@ -531,8 +538,8 @@
     }
 
     .language-row .card {
-      min-width: 200px;
-      height: 100px;
+      min-width: 160px;
+      height: 80px;
       border-radius: 16px;
       position: relative;
       overflow: hidden;
@@ -683,12 +690,12 @@
       <h2>| Choose Language</h2>
     </div>
     <div class="language-row" id="languageRow">
-      <div class="card kannada" data-lang="kannada"><span>ಕನ್ನಡ</span><img src="https://www.image2url.com/r2/default/images/1776715936624-e53340a4-66c8-4104-a942-a20d8aa533ee.png"></div>
+      <div class="card kannada" data-lang="kannada"><span>ಕನ್ನಡ</span><img src="https://www.image2url.com/r2/default/images/1776715936624-e53340a4-66c8-4104-a942-a20d8aa533ee.png" style="left:60px"></div>
       <div class="card hindi" data-lang="hindi"><span>हिंदी</span><img src="https://www.image2url.com/r2/default/images/1776800423275-b9f1e813-5d6e-42e8-ac1d-f33e7db21b9a.png"></div>
-      <div class="card english" data-lang="english"><span>English</span><img src="https://www.image2url.com/r2/default/images/1776718293227-f1960e37-5291-4052-be0b-4a02a4a6d87a.png"></div>
-      <div class="card telugu" data-lang="telugu"><span>తెలుగు</span><img src="https://www.image2url.com/r2/default/images/1776719301668-0a4ba4ab-ced6-4e6c-a7f0-6e0a4a76da7a.png"></div>
-      <div class="card tamil" data-lang="tamil"><span>தமிழ்</span><img src="https://www.image2url.com/r2/default/images/1776719972455-8a409913-0c21-441a-b744-6e0e686269d0f.png"></div>
-      <div class="card malayalam" data-lang="malayalam"><span>മലയാളം</span><img src="https://www.image2url.com/r2/default/images/1776720753135-d39df1b5-fc64-4d74-890b-81299618e917.png"></div>
+      <div class="card english" data-lang="english"><span style="left:6px">English</span><img src="https://www.image2url.com/r2/default/images/1776718293227-f1960e37-5291-4052-be0b-4a02a4a6d87a.png" style="position: absolute; right: -15px; top:50%; transform: translateY(-50%); left:70px"></div>
+      <div class="card telugu" data-lang="telugu"><span style="left:8px">తెలుగు</span><img src="https://www.image2url.com/r2/default/images/1776719301668-0a4ba4ab-ced6-4e6c-a7f0-6e0a4a76da7a.png" style="position: absolute; right: -13px;"></div>
+      <div class="card tamil" data-lang="tamil"><span style="left:8px">தமிழ்</span><img src="https://www.image2url.com/r2/default/images/1776947176356-21ad89c1-2160-45cf-af66-1e2a4ecd8d47.png" style="left:60px"></div>
+      <div class="card malayalam" data-lang="malayalam"><span style="left:2px">മലയാളം</span><img src="https://www.image2url.com/r2/default/images/1776720753135-d39df1b5-fc64-4d74-890b-81299618e917.png" style="position: absolute; right: -25px;"></div>
     </div>
     <div class="section-header">
       <h2>| Upcoming Movies</h2><span class="more-btn" data-target="upcomingMovies">+ More</span>
