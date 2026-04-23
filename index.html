@@ -881,10 +881,15 @@
       let movieModal = document.getElementById('movieModal');
       let langModal = document.getElementById('languageModal');
       movieModal.classList.remove('show');
-      if (langModal) {
-        langModal.style.zIndex = "2000"; // bring back normal
+      if (langModal && langModal.classList.contains('show')) {
+        langModal.style.zIndex = "2000";
+      } else {
+        document.body.classList.remove('modal-open');
       }
-      document.body.classList.remove('modal-open');
+      // 🔥 Fix URL when closing manually
+      if (window.location.search.includes('movie=')) {
+        window.history.back();
+      }
     }
 
     function loadMovieFromUrl() {
