@@ -1114,11 +1114,20 @@
             modalDiv.querySelector('#closeLangModal').addEventListener('click', () => {
               modalDiv.classList.remove('show');
               document.body.classList.remove('modal-open');
+              // 🔥 remove ?lang= from URL
+              let params = new URLSearchParams(window.location.search);
+              params.delete('lang');
+              let newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+              window.history.replaceState({}, '', newUrl);
             });
             modalDiv.addEventListener('click', (e) => {
               if (e.target === modalDiv) {
                 modalDiv.classList.remove('show');
                 document.body.classList.remove('modal-open');
+                let params = new URLSearchParams(window.location.search);
+                params.delete('lang');
+                let newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+                window.history.replaceState({}, '', newUrl);
               }
             });
           }
