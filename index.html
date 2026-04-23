@@ -883,12 +883,16 @@
       movieModal.classList.remove('show');
       if (langModal && langModal.classList.contains('show')) {
         langModal.style.zIndex = "2000";
+        document.body.classList.add('modal-open'); // keep background locked
       } else {
         document.body.classList.remove('modal-open');
       }
-      // 🔥 Fix URL when closing manually
+      // 🔥 update URL WITHOUT triggering popstate
       if (window.location.search.includes('movie=')) {
-        window.history.back();
+        let params = new URLSearchParams(window.location.search);
+        params.delete('movie');
+        let newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+        window.history.replaceState({}, '', newUrl);
       }
     }
 
