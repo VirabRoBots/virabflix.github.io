@@ -738,7 +738,11 @@
     <div class="modal-card">
       <div class="close-modal" id="closeRequestModal">✕</div>
       <div class="modal-info">
-        <h2 style="text-align:center;">Request Movie</h2><input id="reqName" placeholder="Movie Name" style="width:100%;padding:12px;margin-top:10px;border-radius:10px;border:1px solid #ccc;"><input id="reqYear" placeholder="Year" style="width:100%;padding:12px;margin-top:10px;border-radius:10px;border:1px solid #ccc;"><textarea id="reqNote" placeholder="Details" style="width:100%;padding:12px;margin-top:10px;border-radius:10px;height:80px;"></textarea><button id="sendRequestBtn" style="margin-top:15px;width:100%;padding:14px;border-radius:40px;background:linear-gradient(45deg,#00c853,#00e676);color:white;border:none;font-weight:bold;">Send Request</button>
+        <h2 style="text-align:center;">Request Movie</h2><span style="color: #ff4757; font-size: 13px; display: block; text-align: center; margin: 10px 0;">Added within 24hrs</span>
+        <input type="text" id="reqName" placeholder="Movie Name *" style="width:100%;padding:12px;margin-top:10px;border-radius:10px;border:1px solid #ccc;">
+        <input type="text" id="reqYear" placeholder="Year (optional)" style="width:100%;padding:12px;margin-top:10px;border-radius:10px;border:1px solid #ccc;">
+        <textarea id="reqNote" placeholder="Additional details (optional)" style="width:100%;padding:12px;margin-top:10px;border-radius:10px;height:80px;"></textarea>
+        <button id="sendRequestBtn" style="margin-top:15px;width:100%;padding:14px;border-radius:40px;background:linear-gradient(45deg,#00c853,#00e676);color:white;border:none;font-weight:bold;cursor:pointer;">Send Request 📩</button>
       </div>
     </div>
   </div>
@@ -1213,26 +1217,75 @@
 
     function initRequest() {
       let modal = document.getElementById('requestModal');
-      document.getElementById('closeRequestModal').addEventListener('click', () => {
-        modal.classList.remove('show');
-        document.body.classList.remove('modal-open');
-      });
+      let closeBtn = document.getElementById('closeRequestModal');
+      let sendBtn = document.getElementById('sendRequestBtn');
+      let nameInput = document.getElementById('reqName');
+      let yearInput = document.getElementById('reqYear');
+      let noteInput = document.getElementById('reqNote');
+      // Close modal when clicking ✕
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          modal.classList.remove('show');
+          document.body.classList.remove('modal-open');
+        });
+      }
+      // Close modal when clicking outside
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
           modal.classList.remove('show');
           document.body.classList.remove('modal-open');
         }
       });
-      document.getElementById('sendRequestBtn').addEventListener('click', async () => {
-        let name = document.getElementById('reqName').value.trim();
-        if (!name) return showToast('Enter movie name');
-        showToast('Request sent (demo)');
-        document.getElementById('reqName').value = '';
-        document.getElementById('reqYear').value = '';
-        document.getElementById('reqNote').value = '';
-        modal.classList.remove('show');
-        document.body.classList.remove('modal-open');
-      });
+      // Send request to your API
+      if (sendBtn) {
+        sendBtn.addEventListener('click', async () => {
+          let name = nameInput.value.trim();
+          if (!name) {
+            showToast('❌ Please enter movie name');
+            return;
+          }
+          let year = yearInput.value.trim();
+          let note = noteInput.value.trim();
+          // Disable button to prevent double submission
+          sendBtn.disabled = true;
+          sendBtn.innerText = 'Sending...';
+          sendBtn.style.opacity = '0.7';
+          try {
+            let response = await fetch('/api/send-request.js', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                name: name,
+                year: year || '',
+                note: note || ''
+              })
+            });
+            let result = await response.json();
+            if (result.success) {
+              showToast('✅ Request sent successfully!');
+              // Clear form
+              nameInput.value = '';
+              yearInput.value = '';
+              noteInput.value = '';
+              // Close modal
+              modal.classList.remove('show');
+              document.body.classList.remove('modal-open');
+            } else {
+              showToast('❌ Failed to send request. Try again.');
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            showToast('❌ Network error. Check connection.');
+          } finally {
+            // Re-enable button
+            sendBtn.disabled = false;
+            sendBtn.innerText = 'Send Request';
+            sendBtn.style.opacity = '1';
+          }
+        });
+      }
     }
 
     function initTelegramStream() {
