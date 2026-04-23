@@ -818,11 +818,6 @@
     }
 
     function openModal(movie) {
-      let langModal = document.getElementById('languageModal');
-      if (langModal && langModal.classList.contains('show')) {
-        langModal.classList.remove('show');
-        window.cameFromLanguage = true;
-      }
       let modalCard = document.querySelector('#movieModal .modal-card');
       if (modalCard) modalCard.scrollTop = 0;
       let movieSlug = movie.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -862,46 +857,12 @@
 
     function closeModal() {
       document.getElementById('movieModal').classList.remove('show');
-      document.body.classList.remove('modal-open');
-      
-    }
-    if (window.cameFromLanguage && window.lastSelectedLanguage) {
-      setTimeout(() => {
-        let langModal = document.getElementById('languageModal');
-        if (langModal && window.lastSelectedLanguage) {
-          // Reopen with same language
-          let lang = window.lastSelectedLanguage;
-          let titles = {
-            hindi: 'Hindi Movies',
-            english: 'English Movies',
-            tamil: 'Tamil Movies',
-            telugu: 'Telugu Movies',
-            malayalam: 'Malayalam Movies',
-            kannada: 'Kannada Movies'
-          };
-          let all = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
-          let filtered = all.filter(m => {
-            if (!m.language) return false;
-            let langs = Array.isArray(m.language) ? m.language : [m.language];
-            return langs.some(l => l.toLowerCase() === lang.toLowerCase());
-          });
-          document.getElementById('langModalTitle').innerText = titles[lang] || 'Movies';
-          let cont = document.getElementById('languageMoviesList');
-          cont.innerHTML = '';
-          if (filtered.length) {
-            filtered.forEach(m => {
-              let div = document.createElement('div');
-              div.className = 'lang-movie-card';
-              div.innerHTML = `<img src="${m.poster}"><div class="title">${m.title}<br><span class="year">(${m.year})</span></div>`;
-              div.addEventListener('click', () => openModal(m));
-              cont.appendChild(div);
-            });
-          }
-          langModal.classList.add('show');
-          document.body.classList.add('modal-open');
-        }
-        window.cameFromLanguage = false;
-      }, 100);
+      let langModal = document.getElementById('languageModal');
+      if (langModal && langModal.classList.contains('hidden-lang')) {
+        langModal.classList.remove('hidden-lang');
+      } else {
+        document.body.classList.remove('modal-open');
+      }
     }
 
     function loadMovieFromUrl() {
@@ -1122,13 +1083,11 @@
             modalDiv.querySelector('#closeLangModal').addEventListener('click', () => {
               modalDiv.classList.remove('show');
               document.body.classList.remove('modal-open');
-              history.back();
             });
             modalDiv.addEventListener('click', (e) => {
               if (e.target === modalDiv) {
                 modalDiv.classList.remove('show');
                 document.body.classList.remove('modal-open');
-                history.back();
               }
             });
           }
