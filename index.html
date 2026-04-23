@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -822,6 +823,7 @@
       if (langModal && langModal.classList.contains('show')) {
         langModal.classList.remove('show');
       }
+      document.body.classList.remove('modal-open');
       let modalCard = document.querySelector('#movieModal .modal-card');
       if (modalCard) modalCard.scrollTop = 0;
       let movieSlug = movie.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
