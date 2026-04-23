@@ -1200,20 +1200,26 @@
     window.addEventListener('popstate', function(event) {
       let movieModal = document.getElementById('movieModal');
       let langModal = document.getElementById('languageModal');
-      // STEP 1 → If movie is open, close ONLY movie
+      let requestModal = document.getElementById('requestModal');
+      // STEP 1 → Close movie modal
       if (movieModal && movieModal.classList.contains('show')) {
         movieModal.classList.remove('show');
         document.body.classList.remove('modal-open');
-        // reopen language modal
         if (langModal && window.lastSelectedLanguage) {
           langModal.classList.add('show');
           document.body.classList.add('modal-open');
         }
         return;
       }
-      // STEP 2 → If language modal is open, close it
+      // STEP 2 → Close language modal
       if (langModal && langModal.classList.contains('show')) {
         langModal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        return;
+      }
+      // ✅ STEP 3 → Close request modal (THIS WAS MISSING)
+      if (requestModal && requestModal.classList.contains('show')) {
+        requestModal.classList.remove('show');
         document.body.classList.remove('modal-open');
         return;
       }
@@ -1231,6 +1237,7 @@
         closeBtn.addEventListener('click', () => {
           modal.classList.remove('show');
           document.body.classList.remove('modal-open');
+          window.history.back();
         });
       }
       // Close modal when clicking outside
@@ -1238,6 +1245,7 @@
         if (e.target === modal) {
           modal.classList.remove('show');
           document.body.classList.remove('modal-open');
+          window.history.back();
         }
       });
       // Send request to your API
