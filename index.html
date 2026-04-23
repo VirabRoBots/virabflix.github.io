@@ -115,6 +115,11 @@
       justify-content: center;
     }
 
+    .hidden-lang {
+      visibility: hidden;
+      opacity: 0;
+    }
+
     .banner-container {
       position: relative;
       width: calc(100% - 20px);
@@ -821,7 +826,7 @@
     function openModal(movie) {
       let langModal = document.getElementById('languageModal');
       if (langModal && langModal.classList.contains('show')) {
-        langModal.classList.remove('show');
+        langModal.classList.add('hidden-lang');
       }
       document.body.classList.remove('modal-open');
       let modalCard = document.querySelector('#movieModal .modal-card');
@@ -866,6 +871,7 @@
       let langModal = document.getElementById('languageModal');
       if (langModal && langModal.classList.contains('hidden-lang')) {
         langModal.classList.remove('hidden-lang');
+        langModal.classList.add('show'); // 🔥 restore
       } else {
         document.body.classList.remove('modal-open');
       }
