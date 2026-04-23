@@ -860,13 +860,6 @@
     function closeModal() {
       document.getElementById('movieModal').classList.remove('show');
       document.body.classList.remove('modal-open');
-      if (window.history.length > 1) {
-        window.history.back();
-      } else {
-        let cleanUrl = `${window.location.origin}${window.location.pathname}`;
-        window.history.replaceState({}, '', cleanUrl);
-      }
-      // Reopen language modal if we came from it
       if (window.cameFromLanguage && window.lastSelectedLanguage) {
         setTimeout(() => {
           let langModal = document.getElementById('languageModal');
@@ -1122,6 +1115,10 @@
             document.getElementById('closeLangModal').addEventListener('click', () => {
               modalDiv.classList.remove('show');
               document.body.classList.remove('modal-open');
+              window.history.pushState({
+                type: 'language',
+                lang: lang
+              }, '', `?lang=${lang}`);
             });
             modalDiv.addEventListener('click', (e) => {
               if (e.target === modalDiv) {
@@ -1146,6 +1143,10 @@
           });
           modalDiv.classList.add('show');
           document.body.classList.add('modal-open');
+          window.history.pushState({
+            type: 'language',
+            lang: lang
+          }, '', `?lang=${lang}`);
         });
       });
     }
@@ -1197,33 +1198,23 @@
       }, 100);
     }
     window.addEventListener('popstate', function(event) {
-      let state = event.state;
-      // Close movie modal
-      if (document.getElementById('movieModal').classList.contains('show')) {
-        document.getElementById('movieModal').classList.remove('show');
+      let movieModal = document.getElementById('movieModal');
+      let langModal = document.getElementById('languageModal');
+      // STEP 1 → If movie is open, close ONLY movie
+      if (movieModal && movieModal.classList.contains('show')) {
+        movieModal.classList.remove('show');
         document.body.classList.remove('modal-open');
+        // reopen language modal
+        if (langModal && window.lastSelectedLanguage) {
+          langModal.classList.add('show');
+          document.body.classList.add('modal-open');
+        }
         return;
       }
-      // Close language modal
-      let langModal = document.getElementById('languageModal');
+      // STEP 2 → If language modal is open, close it
       if (langModal && langModal.classList.contains('show')) {
         langModal.classList.remove('show');
         document.body.classList.remove('modal-open');
-        return;
-      }
-      // Close request modal
-      let requestModal = document.getElementById('requestModal');
-      if (requestModal && requestModal.classList.contains('show')) {
-        requestModal.classList.remove('show');
-        document.body.classList.remove('modal-open');
-        return;
-      }
-      // Exit search → go back home
-      let searchCont = document.getElementById('searchResultsContainer');
-      let homeContent = document.getElementById('homepageContent');
-      if (searchCont && searchCont.style.display === 'block') {
-        searchCont.style.display = 'none';
-        homeContent.style.display = 'block';
         return;
       }
     });
