@@ -824,9 +824,9 @@
       if (modalCard) modalCard.scrollTop = 0;
       let movieSlug = movie.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       let shareableUrl = `${window.location.origin}${window.location.pathname}?movie=${movieSlug}`;
-      window.history.replaceState({
-        movie: movie.title,
-        modalOpen: true
+      window.history.pushState({
+        type: 'movie',
+        movie: movie.title
       }, '', shareableUrl);
       let full = movie.plot || "No description",
         plotEl = document.getElementById('modalPlot'),
@@ -1059,6 +1059,12 @@
         grid = document.getElementById('searchResultsGrid');
       input.addEventListener('input', function() {
         let val = this.value.toLowerCase().trim();
+        if (val !== '') {
+          window.history.pushState({
+            type: 'search',
+            query: val
+          }, '', `?search=${val}`);
+        }
         if (val === '') {
           home.style.display = 'block';
           searchCont.style.display = 'none';
@@ -1087,6 +1093,10 @@
       document.querySelectorAll('#languageRow .card').forEach(card => {
         card.addEventListener('click', () => {
           let lang = card.getAttribute('data-lang');
+          window.history.pushState({
+            type: 'language',
+            lang: lang
+          }, '', `?lang=${lang}`);
           window.lastSelectedLanguage = lang;
           let titles = {
             hindi: 'Hindi Movies',
@@ -1157,6 +1167,9 @@
           if (nav === 'request') {
             document.getElementById('requestModal').classList.add('show');
             document.body.classList.add('modal-open');
+            window.history.pushState({
+              type: 'request'
+            }, '', '#request');
             return;
           }
           if (nav === 'tv' || nav === 'games') {
@@ -1184,34 +1197,34 @@
       }, 100);
     }
     window.addEventListener('popstate', function(event) {
-      let requestModal = document.getElementById('requestModal');
-      let movieModal = document.getElementById('movieModal');
+      let state = event.state;
+      // Close movie modal
+      if (document.getElementById('movieModal').classList.contains('show')) {
+        document.getElementById('movieModal').classList.remove('show');
+        document.body.classList.remove('modal-open');
+        return;
+      }
+      // Close language modal
       let langModal = document.getElementById('languageModal');
-      let searchCont = document.getElementById('searchResultsContainer');
-      let homeContent = document.getElementById('homepageContent');
-      if (requestModal && requestModal.classList.contains('show')) {
-        requestModal.classList.remove('show');
-        document.body.classList.remove('modal-open');
-        event.preventDefault();
-        return false;
-      }
-      if (movieModal && movieModal.classList.contains('show')) {
-        movieModal.classList.remove('show');
-        document.body.classList.remove('modal-open');
-        event.preventDefault();
-        return false;
-      }
       if (langModal && langModal.classList.contains('show')) {
         langModal.classList.remove('show');
         document.body.classList.remove('modal-open');
-        event.preventDefault();
-        return false;
+        return;
       }
+      // Close request modal
+      let requestModal = document.getElementById('requestModal');
+      if (requestModal && requestModal.classList.contains('show')) {
+        requestModal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        return;
+      }
+      // Exit search → go back home
+      let searchCont = document.getElementById('searchResultsContainer');
+      let homeContent = document.getElementById('homepageContent');
       if (searchCont && searchCont.style.display === 'block') {
         searchCont.style.display = 'none';
         homeContent.style.display = 'block';
-        event.preventDefault();
-        return false;
+        return;
       }
     });
 
