@@ -73,6 +73,14 @@
       z-index: 3;
     }
 
+    #movieModal {
+      z-index: 3000;
+    }
+
+    #languageModal {
+      z-index: 2000;
+    }
+
     body.dark-mode .logo-text {
       color: #fff;
     }
@@ -824,11 +832,14 @@
     }
 
     function openModal(movie) {
+      let movieModal = document.getElementById('movieModal');
       let langModal = document.getElementById('languageModal');
       if (langModal && langModal.classList.contains('show')) {
-        langModal.classList.add('hidden-lang');
+        langModal.style.zIndex = "1000";
       }
-      document.body.classList.remove('modal-open');
+      movieModal.style.zIndex = "3000";
+      movieModal.classList.add('show');
+      document.body.classList.add('modal-open'); // 🔥 you missed this
       let modalCard = document.querySelector('#movieModal .modal-card');
       if (modalCard) modalCard.scrollTop = 0;
       let movieSlug = movie.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -867,14 +878,13 @@
     }
 
     function closeModal() {
-      document.getElementById('movieModal').classList.remove('show');
+      let movieModal = document.getElementById('movieModal');
       let langModal = document.getElementById('languageModal');
-      if (langModal && langModal.classList.contains('hidden-lang')) {
-        langModal.classList.remove('hidden-lang');
-        langModal.classList.add('show'); // 🔥 restore
-      } else {
-        document.body.classList.remove('modal-open');
+      movieModal.classList.remove('show');
+      if (langModal) {
+        langModal.style.zIndex = "2000"; // bring back normal
       }
+      document.body.classList.remove('modal-open');
     }
 
     function loadMovieFromUrl() {
