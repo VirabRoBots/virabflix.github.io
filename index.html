@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -760,6 +759,8 @@
     </div>
   </div>
   <script>
+    let loadingTimer = null;
+    let loadingCancelled = false;
     let movieData = {
       popular: [],
       upcoming: [],
@@ -786,31 +787,60 @@
       }
       let div = document.createElement('div');
       div.id = 'loadingOverlay';
-      div.innerHTML = `<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:10001;display:flex;align-items:center;justify-content:center;flex-direction:column;">
-    <div style="background:linear-gradient(45deg,#00c6ff,#0072ff);width:70px;height:70px;border-radius:50%;animation:pulse 1s infinite;"></div>
-    <p style="color:white;margin-top:25px;">Loading ${type}...</p>
-    <p style="color:#aaa;">Redirecting <span id="countdown" style="color:#00c6ff;font-size:18px;font-weight:bold;">5</span> seconds</p>
-    <button id="cancelLoading" style="margin-top:30px;padding:8px 25px;border-radius:30px;background:#ff4757;color:white;cursor:pointer;border:none;outline:none;font-weight:bold;">Cancel</button>
-  </div>
-  <style>@keyframes pulse{0%{transform:scale(0.8);opacity:0.5;}70%{transform:scale(1.1);opacity:1;}100%{transform:scale(0.8);opacity:0.5;}}</style>`;
+      // ✅ Add history state
+      window.history.pushState({
+        type: 'loading'
+      }, '', '#loading');
+      div.innerHTML = `
+<div style="position:fixed;top:0;left:0;width:100%;height:100%;
+background:rgba(0,0,0,0.95);z-index:10001;
+display:flex;align-items:center;justify-content:center;flex-direction:column;">
+
+  <p style="color:white;font-size:16px;">Loading ${type}...</p>
+  <p style="color:#aaa;margin:6px 0;">
+    Redirecting <span id="countdown">5</span> sec
+  </p>
+
+  <button id="cancelLoading"
+    style="
+      margin-top:15px;
+      padding:12px 28px;
+      border-radius:40px;
+      border:none;
+      font-weight:bold;
+      cursor:pointer;
+      background:linear-gradient(45deg,#ff416c,#ff4b2b);
+      color:white;
+      font-size:14px;
+      box-shadow:0 6px 15px rgba(0,0,0,0.3);
+    ">
+    Cancel
+  </button>
+
+</div>
+`;
       document.body.appendChild(div);
-      let seconds = 5;
-      let cancel = false;
-      let countdownEl = document.getElementById('countdown');
-      let timer = setInterval(() => {
-        if (cancel) return;
+      let seconds = 5; // ✅ FIX
+      let countdownEl = document.getElementById('countdown'); // ✅ FIX
+      loadingCancelled = false;
+      loadingTimer = setInterval(() => {
+        if (loadingCancelled) return;
         seconds--;
         if (countdownEl) countdownEl.innerText = seconds;
         if (seconds <= 0) {
-          clearInterval(timer);
-          div.remove();
-          window.location.href = link;
+          clearInterval(loadingTimer);
+          if (!loadingCancelled) {
+            window.location.href = link;
+          }
         }
       }, 1000);
-      document.getElementById('cancelLoading')?.addEventListener('click', () => {
-        cancel = true;
-        clearInterval(timer);
-        div.remove();
+      document.getElementById('cancelLoading').addEventListener('click', () => {
+        loadingCancelled = true;
+        clearInterval(loadingTimer);
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) overlay.remove();
+        // optional: reset URL cleanly
+        history.replaceState({}, '', window.location.pathname);
       });
     }
 
@@ -1207,25 +1237,32 @@
       }, 100);
     }
     window.addEventListener('popstate', function() {
+      let loading = document.getElementById('loadingOverlay');
+      // ✅ STOP redirect when back pressed
+      if (loading) {
+        loadingCancelled = true;
+        clearInterval(loadingTimer);
+        loading.remove();
+        return;
+      }
       let movieModal = document.getElementById('movieModal');
       let langModal = document.getElementById('languageModal');
       let requestModal = document.getElementById('requestModal');
-      if (movieModal && movieModal.classList.contains('show')) {
+      if (movieModal?.classList.contains('show')) {
         movieModal.classList.remove('show');
         document.body.classList.remove('modal-open');
         return;
       }
-      if (langModal && langModal.classList.contains('show')) {
+      if (langModal?.classList.contains('show')) {
         langModal.classList.remove('show');
         document.body.classList.remove('modal-open');
         return;
       }
-      if (requestModal && requestModal.classList.contains('show')) {
+      if (requestModal?.classList.contains('show')) {
         requestModal.classList.remove('show');
         document.body.classList.remove('modal-open');
         return;
       }
-      // 🔥 fallback → go to home state
       document.getElementById('homepageContent').style.display = 'block';
       document.getElementById('searchResultsContainer').style.display = 'none';
     });
