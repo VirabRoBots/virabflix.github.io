@@ -1,7 +1,9 @@
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
+  // ✅ Respond immediately (VERY IMPORTANT for Telegram)
+  res.status(200).end();
 
-  // 🔴 HARDCODED TOKENS (NOT SAFE)
+  if (req.method !== 'POST') return;
+
   const BOT_TOKEN = "8458711873:AAHBiPv2XWDZ3WuGaRCZvejat8bEIfwVZkk";
   const GITHUB_TOKEN = "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";
 
@@ -10,11 +12,26 @@ export default async function handler(req, res) {
   const FILE_PATH = "movies.json";
 
   try {
-    const msg = req.body.message;
-    if (!msg || !msg.text) return res.status(200).end();
+    const msg = req.body?.message;
+    if (!msg || !msg.text) return;
 
     const chatId = msg.chat.id;
-    const lines = msg.text.split('\n').filter(l => l.trim());
+    const text = msg.text.trim();
+
+    // ✅ Ignore normal messages (fix annoying error)
+    if (!text.includes('\n')) {
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: "📌 Send movie like:\npopular/upcoming/webseries + 10 lines"
+        })
+      });
+      return;
+    }
+
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
 
     if (lines.length < 11) {
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -25,15 +42,15 @@ export default async function handler(req, res) {
           text: "❌ Format:\npopular/upcoming/webseries + 10 lines"
         })
       });
-      return res.status(200).end();
+      return;
     }
 
     const sectionInput = lines[0].toLowerCase();
 
     let section = null;
     if (sectionInput === 'popular') section = 'popular';
-    if (sectionInput === 'upcoming') section = 'upcoming';
-    if (sectionInput === 'webseries') section = 'webSeries';
+    else if (sectionInput === 'upcoming') section = 'upcoming';
+    else if (sectionInput === 'webseries') section = 'webSeries';
 
     if (!section) {
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -44,7 +61,7 @@ export default async function handler(req, res) {
           text: "❌ Use: popular / upcoming / webseries"
         })
       });
-      return res.status(200).end();
+      return;
     }
 
     const movie = {
@@ -62,7 +79,7 @@ export default async function handler(req, res) {
       telegramLink: lines[10] || "#"
     };
 
-    // 🔹 GET FILE FROM GITHUB
+    // 🔹 GET movies.json
     const fileRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
       headers: {
         Authorization: `token ${GITHUB_TOKEN}`
@@ -72,10 +89,27 @@ export default async function handler(req, res) {
     const fileData = await fileRes.json();
     const content = JSON.parse(Buffer.from(fileData.content, 'base64').toString());
 
-    // 🔹 ADD MOVIE
+    // 🔹 CHECK duplicate
+    const exists = content[section].some(
+      m => m.title.toLowerCase() === movie.title.toLowerCase()
+    );
+
+    if (exists) {
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: "⚠️ Already exists"
+        })
+      });
+      return;
+    }
+
+    // 🔹 ADD movie
     content[section].unshift(movie);
 
-    // 🔹 UPDATE FILE
+    // 🔹 UPDATE GitHub
     await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
       method: "PUT",
       headers: {
@@ -89,7 +123,7 @@ export default async function handler(req, res) {
       })
     });
 
-    // 🔹 SUCCESS MESSAGE
+    // 🔹 SUCCESS
     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -99,13 +133,10 @@ export default async function handler(req, res) {
       })
     });
 
-    return res.status(200).end();
-
   } catch (err) {
     console.log(err);
 
-    // 🔹 ERROR MESSAGE
-    await fetch(`https://api.telegram.org/botYOUR_BOT_TOKEN_HERE/sendMessage`, {
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -113,7 +144,5 @@ export default async function handler(req, res) {
         text: "❌ Error occurred"
       })
     });
-
-    return res.status(200).end();
   }
 }
