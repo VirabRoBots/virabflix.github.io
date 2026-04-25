@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   }
 
   const BOT_TOKEN = "8458711873:AAHBiPv2XWDZ3WuGaRCZvejat8bEIfwVZkk";
-  const GITHUB_TOKEN = "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";
+  const GITHUB_TOKEN = "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";
   const OWNER = "VirabRoBots";
   const REPO = "virabflix.github.io";
   const FILE_PATH = "movies.json";
