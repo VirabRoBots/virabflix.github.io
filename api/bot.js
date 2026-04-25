@@ -17,9 +17,16 @@ export default async function handler(req, res) {
 
     const chatId = msg.chat.id;
     const text = msg.text.trim();
-
-    // ❌ Remove this - it's causing early termination
-    // if (!text.includes('\n')) { ... }
+    
+    // Send debug message
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: "🔄 Processing your request..."
+      })
+    });
 
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
 
@@ -29,7 +36,7 @@ export default async function handler(req, res) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: chatId,
-          text: "❌ Format:\npopular/upcoming/webseries + 10 lines"
+          text: "❌ Need 11 lines. You sent: " + lines.length
         })
       });
       return res.status(200).end();
@@ -54,6 +61,49 @@ export default async function handler(req, res) {
       return res.status(200).end();
     }
 
+    // Debug: Check GitHub access
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: "📡 Accessing GitHub..."
+      })
+    });
+
+    // GET movies.json
+    const fileRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
+      headers: { Authorization: `token ${GITHUB_TOKEN}` }
+    });
+
+    if (!fileRes.ok) {
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: `❌ GitHub error: ${fileRes.status}`
+        })
+      });
+      return res.status(200).end();
+    }
+
+    const fileData = await fileRes.json();
+    const content = JSON.parse(Buffer.from(fileData.content, 'base64').toString());
+
+    // Check if section exists
+    if (!content[section]) {
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: `❌ Section '${section}' not found in movies.json`
+        })
+      });
+      return res.status(200).end();
+    }
+
     const movie = {
       title: lines[1],
       year: lines[2],
@@ -68,14 +118,6 @@ export default async function handler(req, res) {
       streamLink: lines[9] || "#",
       telegramLink: lines[10] || "#"
     };
-
-    // GET movies.json
-    const fileRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
-      headers: { Authorization: `token ${GITHUB_TOKEN}` }
-    });
-
-    const fileData = await fileRes.json();
-    const content = JSON.parse(Buffer.from(fileData.content, 'base64').toString());
 
     // Check duplicate
     const exists = content[section].some(
@@ -98,7 +140,7 @@ export default async function handler(req, res) {
     content[section].unshift(movie);
 
     // Update GitHub
-    await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
+    const updateRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
       method: "PUT",
       headers: {
         Authorization: `token ${GITHUB_TOKEN}`,
@@ -111,31 +153,47 @@ export default async function handler(req, res) {
       })
     });
 
+    if (!updateRes.ok) {
+      const errorData = await updateRes.json();
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: `❌ GitHub update failed: ${updateRes.status} - ${JSON.stringify(errorData)}`
+        })
+      });
+      return res.status(200).end();
+    }
+
     // Success message
     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: chatId,
-        text: `✅ Added to ${section}`
+        text: `✅ Added "${movie.title}" to ${section}`
       })
     });
 
-    // Send response only at the end
     return res.status(200).end();
 
   } catch (err) {
-    console.error(err);
+    console.error('Full error:', err);
     
-    if (req.body?.message?.chat?.id) {
+    // Send detailed error to Telegram
+    const errorMsg = err.message || String(err);
+    const chatId = req.body?.message?.chat?.id;
+    
+    if (chatId) {
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          chat_id: req.body.message.chat.id,
-          text: "❌ Error occurred"
+          chat_id: chatId,
+          text: `❌ Error: ${errorMsg.substring(0, 200)}`
         })
-      });
+      }).catch(console.error);
     }
     
     return res.status(200).end();
