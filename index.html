@@ -969,9 +969,9 @@
     }
     async function loadMovies() {
       try {
-        let res = await fetch("https://api.jsonbin.io/v3/b/YOUR_BIN_ID/latest", {
+        let res = await fetch("https://api.jsonbin.io/v3/b/69edd100856a6821897367c9/latest", {
           headers: {
-            "X-Master-Key": "YOUR_API_KEY"
+            "X-Master-Key": "$2a$10$TyOXeu0PPOnyzTfOreJzhOKiw3NyMQtnURo0koS2JFiOFMatKoDgq"
           }
         });
         if (!res.ok) throw new Error();
