@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -968,10 +969,14 @@
     }
     async function loadMovies() {
       try {
-        let res = await fetch('movies.json');
+        let res = await fetch("https://api.jsonbin.io/v3/b/YOUR_BIN_ID/latest", {
+          headers: {
+            "X-Master-Key": "YOUR_API_KEY"
+          }
+        });
         if (!res.ok) throw new Error();
-        let data = await res.json();
-        movieData = data;
+        let json = await res.json();
+        movieData = json.record;
         renderAll();
         initBanner();
         initSearch();
@@ -981,19 +986,25 @@
             btn.addEventListener('click', (e) => {
               e.stopPropagation();
               let title = btn.getAttribute('data-title');
-              let found = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries].find(m => m.title === title);
+              let found = [
+                ...movieData.popular,
+                ...movieData.upcoming,
+                ...movieData.webSeries
+              ].find(m => m.title === title);
               if (!found) {
                 let bs = movieData.bannerSlides.find(s => s.title === title);
-                if (bs) found = {
-                  ...bs,
-                  rating: "N/A",
-                  plot: "No description",
-                  duration: "N/A",
-                  director: "TBA",
-                  language: "Multiple",
-                  quality: "HD",
-                  genres: []
-                };
+                if (bs) {
+                  found = {
+                    ...bs,
+                    rating: "N/A",
+                    plot: "No description",
+                    duration: "N/A",
+                    director: "TBA",
+                    language: "Multiple",
+                    quality: "HD",
+                    genres: []
+                  };
+                }
               }
               found ? openModal(found) : showToast('Not found');
             });
@@ -1001,8 +1012,9 @@
         }, 100);
         initTelegramStream();
       } catch (e) {
-        console.error('Failed to load movies.json', e);
-        document.getElementById('popularMovies').innerHTML = '<div style="padding:20px;text-align:center">⚠️ Failed to load movies.json</div>';
+        console.error('Failed to load JSONBin', e);
+        document.getElementById('popularMovies').innerHTML =
+          '<div style="padding:20px;text-align:center">⚠️ Failed to load data</div>';
       }
     }
 
