@@ -39,18 +39,25 @@ export default async function handler(req, res) {
   }
 
   // =========================
-  // ➕ ADD
+  // ➕ ADD (FULL VERSION with language & quality)
   // =========================
   if (text.startsWith("/add")) {
-    // Split by newline and filter empty lines
-    let lines = text.replace("/add", "").trim().split("\n").filter(line => line.trim());
+    // Split by newline - IMPORTANT: Telegram uses \n
+    let lines = text.split("\n");
+    // Remove the first line which is "/add"
+    lines.shift();
+    // Filter out empty lines
+    lines = lines.filter(line => line.trim().length > 0);
     
-    if (lines.length < 11) {
-      await send(chatId, `❌ Invalid format! Need 11 lines:\n1. section\n2. title\n3. year\n4. poster\n5. rating\n6. duration\n7. director\n8. genres\n9. plot\n10. streamLink\n11. telegramLink\n\nReceived ${lines.length} lines`);
+    // Debug: Send back what we received
+    await send(chatId, `📝 Received ${lines.length} lines:\n${lines.slice(0,5).join('\n')}...`);
+    
+    if (lines.length < 13) {
+      await send(chatId, `❌ Need 13 lines! Got ${lines.length}\n\nFormat:\n1. section\n2. title\n3. year\n4. poster\n5. rating\n6. duration\n7. director\n8. genres\n9. plot\n10. language\n11. quality\n12. streamLink\n13. telegramLink`);
       return res.status(200).send("OK");
     }
 
-    let section = lines[0].toLowerCase();
+    let section = lines[0].toLowerCase().trim();
     
     // Validate section
     if (!["popular", "webseries", "upcoming"].includes(section)) {
@@ -61,7 +68,7 @@ export default async function handler(req, res) {
     // Normalize section name
     if (section === "webseries") section = "webSeries";
     
-    let title = lines[1];
+    let title = lines[1].trim();
     
     // Check if section exists in db
     if (!db[section]) {
@@ -77,22 +84,24 @@ export default async function handler(req, res) {
 
     let movie = {
       title: title,
-      year: lines[2] || "N/A",
-      poster: lines[3] || "https://via.placeholder.com/120x180?text=No+Poster",
-      rating: lines[4] || "N/A",
-      duration: lines[5] || "N/A",
-      director: lines[6] || "N/A",
-      genres: lines[7] ? lines[7].split(",").map(g => g.trim()) : [],
-      plot: lines[8] || "No description",
-      streamLink: lines[9] || "#",
-      telegramLink: lines[10] || "#"
+      year: lines[2].trim(),
+      poster: lines[3].trim(),
+      rating: lines[4].trim(),
+      duration: lines[5].trim(),
+      director: lines[6].trim(),
+      genres: lines[7].split(",").map(g => g.trim()),
+      plot: lines[8].trim(),
+      language: lines[9].trim().split(",").map(l => l.trim()), // Can be multiple: "Kannada,Telugu"
+      quality: lines[10].trim(),
+      streamLink: lines[11].trim(),
+      telegramLink: lines[12].trim()
     };
 
     db[section].push(movie);
 
     try {
       await updateDB(db);
-      await send(chatId, `✅ Added successfully!\n\nSection: ${section}\nTitle: ${title}\nYear: ${movie.year}`);
+      await send(chatId, `✅ Added successfully!\n\nSection: ${section}\nTitle: ${title}\nYear: ${movie.year}\nLanguage: ${movie.language.join(", ")}`);
     } catch (error) {
       await send(chatId, "❌ Failed to update database");
     }
@@ -104,14 +113,16 @@ export default async function handler(req, res) {
   // ✏️ EDIT
   // =========================
   if (text.startsWith("/edit")) {
-    let lines = text.replace("/edit", "").trim().split("\n").filter(line => line.trim());
+    let lines = text.split("\n");
+    lines.shift(); // Remove "/edit"
+    lines = lines.filter(line => line.trim().length > 0);
     
     if (lines.length < 3) {
-      await send(chatId, `❌ Invalid format! Need:\n1. section\n2. old title\n3. field:value changes\n\nExample:\n/edit\npopular\nKalki 2898 AD\nyear:2025\nrating:9.0\nstreamLink:https://newlink.com`);
+      await send(chatId, `❌ Invalid format! Need:\n1. section\n2. old title\n3. field:value changes\n\nExample:\n/edit\npopular\nNee Forever\nyear:2025\nrating:9.0`);
       return res.status(200).send("OK");
     }
 
-    let section = lines[0].toLowerCase();
+    let section = lines[0].toLowerCase().trim();
     if (section === "webseries") section = "webSeries";
     
     if (!["popular", "webSeries", "upcoming"].includes(section)) {
@@ -119,7 +130,7 @@ export default async function handler(req, res) {
       return res.status(200).send("OK");
     }
     
-    let oldTitle = lines[1];
+    let oldTitle = lines[1].trim();
     let changes = lines.slice(2);
     
     // Find the movie
@@ -133,9 +144,11 @@ export default async function handler(req, res) {
     // Apply changes
     let updatedFields = [];
     for (let change of changes) {
-      let [field, ...valueParts] = change.split(":");
-      let value = valueParts.join(":").trim();
-      field = field.trim().toLowerCase();
+      let colonIndex = change.indexOf(":");
+      if (colonIndex === -1) continue;
+      
+      let field = change.substring(0, colonIndex).trim().toLowerCase();
+      let value = change.substring(colonIndex + 1).trim();
       
       switch(field) {
         case "title":
@@ -170,6 +183,14 @@ export default async function handler(req, res) {
           db[section][movieIndex].plot = value;
           updatedFields.push("plot");
           break;
+        case "language":
+          db[section][movieIndex].language = value.split(",").map(l => l.trim());
+          updatedFields.push("language");
+          break;
+        case "quality":
+          db[section][movieIndex].quality = value;
+          updatedFields.push("quality");
+          break;
         case "streamlink":
           db[section][movieIndex].streamLink = value;
           updatedFields.push("streamLink");
@@ -179,7 +200,7 @@ export default async function handler(req, res) {
           updatedFields.push("telegramLink");
           break;
         default:
-          await send(chatId, `⚠️ Unknown field: ${field}\nAvailable: title, year, poster, rating, duration, director, genres, plot, streamlink, telegramlink`);
+          await send(chatId, `⚠️ Unknown field: ${field}`);
       }
     }
     
@@ -224,7 +245,7 @@ export default async function handler(req, res) {
     }
 
     if (!found) {
-      await send(chatId, `❌ Movie "${name}" not found in any section`);
+      await send(chatId, `❌ Movie "${name}" not found`);
       return res.status(200).send("OK");
     }
 
