@@ -3,7 +3,7 @@ const BIN_ID = "69edd100856a6821897367c9";
 const API_KEY = "$2a$10$TyOXeu0PPOnyzTfOreJzhOKiw3NyMQtnURo0koS2JFiOFMatKoDgq";
 
 // space separated admins
-const ADMINS = "123456789 987654321".split(" ");
+const ADMINS = "6887303054".split(" ");
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.send("OK");
