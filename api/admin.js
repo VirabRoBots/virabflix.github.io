@@ -39,7 +39,7 @@ export default async function handler(req, res) {
   }
 
   // =========================
-  // ➕ ADD (with BANNER support)
+  // ➕ ADD (BANNER with FULL details - 13 lines)
   // =========================
   if (text.startsWith("/add")) {
     let lines = text.split("\n");
@@ -53,10 +53,10 @@ export default async function handler(req, res) {
 
     let section = lines[0].toLowerCase().trim();
     
-    // ========== BANNER SECTION ==========
+    // ========== BANNER SECTION WITH FULL DETAILS ==========
     if (section === "banner") {
-      if (lines.length < 5) {
-        await send(chatId, "❌ Banner needs: title, year, poster, type\nFormat:\n/add\nbanner\n[title]\n[year]\n[poster URL]\n[type]");
+      if (lines.length < 13) {
+        await send(chatId, `❌ Banner needs 13 lines! Got ${lines.length}\n\nFormat:\n1. banner\n2. title\n3. year\n4. poster\n5. rating\n6. duration\n7. director\n8. genres\n9. plot\n10. language\n11. quality\n12. streamLink\n13. telegramLink\n14. type (optional)`);
         return res.status(200).send("OK");
       }
       
@@ -66,7 +66,16 @@ export default async function handler(req, res) {
         title: lines[1].trim(),
         year: lines[2].trim(),
         poster: lines[3].trim(),
-        type: lines[4].trim() || "Movie"
+        rating: lines[4].trim(),
+        duration: lines[5].trim(),
+        director: lines[6].trim(),
+        genres: lines[7].split(",").map(g => g.trim()),
+        plot: lines[8].trim(),
+        language: lines[9].trim().split(",").map(l => l.trim()),
+        quality: lines[10].trim(),
+        streamLink: lines[11].trim(),
+        telegramLink: lines[12].trim(),
+        type: lines[13] ? lines[13].trim() : "Movie" // Optional type field
       };
       
       // Check exists
@@ -80,14 +89,14 @@ export default async function handler(req, res) {
       
       try {
         await updateDB(db);
-        await send(chatId, `✅ Banner added!\nTitle: ${banner.title}\nYear: ${banner.year}`);
+        await send(chatId, `✅ Banner added with full details!\nTitle: ${banner.title}\nYear: ${banner.year}\nRating: ${banner.rating}\nLanguage: ${banner.language.join(", ")}`);
       } catch (error) {
         await send(chatId, "❌ Failed to update database");
       }
       return res.status(200).send("OK");
     }
     
-    // ========== REGULAR MOVIES ==========
+    // ========== REGULAR MOVIES (popular, webseries, upcoming) ==========
     if (lines.length < 13) {
       await send(chatId, `❌ Need 13 lines! Got ${lines.length}\n\nFormat:\n1. section\n2. title\n3. year\n4. poster\n5. rating\n6. duration\n7. director\n8. genres\n9. plot\n10. language\n11. quality\n12. streamLink\n13. telegramLink`);
       return res.status(200).send("OK");
@@ -161,9 +170,9 @@ export default async function handler(req, res) {
     let oldTitle = lines[1].trim();
     let changes = lines.slice(2);
     
-    let movieIndex = db[section]?.findIndex(m => m.title === oldTitle);
+    let itemIndex = db[section]?.findIndex(m => m.title === oldTitle);
     
-    if (movieIndex === -1 || !db[section][movieIndex]) {
+    if (itemIndex === -1 || !db[section][itemIndex]) {
       await send(chatId, `❌ "${oldTitle}" not found in ${section}`);
       return res.status(200).send("OK");
     }
@@ -176,11 +185,11 @@ export default async function handler(req, res) {
       let field = change.substring(0, colonIndex).trim().toLowerCase();
       let value = change.substring(colonIndex + 1).trim();
       
-      if (db[section][movieIndex].hasOwnProperty(field)) {
+      if (db[section][itemIndex].hasOwnProperty(field)) {
         if (field === "genres" || field === "language") {
-          db[section][movieIndex][field] = value.split(",").map(v => v.trim());
+          db[section][itemIndex][field] = value.split(",").map(v => v.trim());
         } else {
-          db[section][movieIndex][field] = value;
+          db[section][itemIndex][field] = value;
         }
         updatedFields.push(field);
       }
