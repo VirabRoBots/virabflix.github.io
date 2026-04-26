@@ -657,7 +657,35 @@
       color: #fff;
     }
 
-    @media (max-width:480px) {
+    /* Base styles for language grid (works on all screens) */
+    .language-movies-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      justify-items: center;
+      align-items: start;
+      padding: 20px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .lang-movie-card {
+      width: 100%;
+      max-width: 120px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .lang-movie-card img {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      border-radius: 12px;
+      object-fit: cover;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Mobile (≤480px) - tighter grid */
+    @media (max-width: 480px) {
 
       .card img,
       .upcoming-card img,
@@ -670,59 +698,37 @@
         height: 180px;
       }
 
-      /* 🔹 Language Grid */
       .language-movies-list {
-        display: grid;
-        grid-template-columns: repeat(3, 120px);
-        /* desktop default */
-        justify-content: center;
-        column-gap: 16px;
-        row-gap: 16px;
-        padding: 20px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        padding: 16px 10px;
+        max-width: 100%;
       }
 
-      /* 🔹 Card */
       .lang-movie-card {
-        width: 120px;
-        text-align: center;
-        cursor: pointer;
+        max-width: 100px;
+      }
+    }
+
+    /* Desktop (≥800px) - wider but still centered */
+    @media (min-width: 800px) {
+      .language-movies-list {
+        max-width: 550px;
+        gap: 20px;
       }
 
-      /* 🔹 Poster */
-      .lang-movie-card img {
-        width: 120px;
-        height: 180px;
-        border-radius: 8px;
-        object-fit: cover;
+      .lang-movie-card {
+        max-width: 130px;
       }
+    }
 
-      /* 🔹 Mobile Fix (your final working one) */
-      @media (max-width: 480px) {
-        .language-movies-list {
-          grid-template-columns: repeat(3, 100px);
-          justify-content: center;
-          column-gap: 12px;
-          row-gap: 14px;
-          padding: 0 10px;
-          /* left & right gap */
-        }
-
-        .lang-movie-card {
-          width: 100px;
-        }
-
-        .lang-movie-card img {
-          width: 100px;
-          height: 150px;
-        }
-      }
-
-      /* 🔹 Only vertical scroll for language modal */
-      #languageModal .modal-card {
-        max-height: 90vh;
-        overflow-y: auto;
-        overflow-x: hidden;
-      }
+    /* Modal card styling - NOT inside any media query */
+    #languageModal .modal-card {
+      max-height: 90vh;
+      overflow-y: auto;
+      width: min(450px, 94vw);
+      border-radius: 28px;
+    }
   </style>
 </head>
 
