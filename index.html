@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -986,26 +985,13 @@
             btn.addEventListener('click', (e) => {
               e.stopPropagation();
               let title = btn.getAttribute('data-title');
+              // Search in all sections including banner
               let found = [
                 ...movieData.popular,
                 ...movieData.upcoming,
-                ...movieData.webSeries
+                ...movieData.webSeries,
+                ...movieData.bannerSlides
               ].find(m => m.title === title);
-              if (!found) {
-                let bs = movieData.bannerSlides.find(s => s.title === title);
-                if (bs) {
-                  found = {
-                    ...bs,
-                    rating: "N/A",
-                    plot: "No description",
-                    duration: "N/A",
-                    director: "TBA",
-                    language: "Multiple",
-                    quality: "HD",
-                    genres: []
-                  };
-                }
-              }
               found ? openModal(found) : showToast('Not found');
             });
           });
