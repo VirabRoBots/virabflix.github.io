@@ -27,10 +27,6 @@ export default async function handler(req, res) {
     return title.toLowerCase().trim();
   }
 
-  function processEmojis(text) {
-    return text;
-  }
-
   function findDuplicate(title, excludeMessageId = null) {
     const t = normalize(title);
     for (let sec of sections) {
@@ -54,12 +50,10 @@ export default async function handler(req, res) {
       const titleToDelete = callbackData.replace("delete_", "");
       
       let deleted = false;
-      let deletedItem = null;
       for (let sec of sections) {
         if (!db[sec]) continue;
         const foundItem = db[sec].find(m => normalize(m.title) === normalize(titleToDelete));
         if (foundItem) {
-          deletedItem = foundItem;
           db[sec] = db[sec].filter(m => normalize(m.title) !== normalize(titleToDelete));
           deleted = true;
           break;
@@ -102,36 +96,31 @@ export default async function handler(req, res) {
   const messageId = msg.message_id;
   const chatId = msg.chat.id;
 
-  // Parse multi-line movies
-  function parseMovieMessage(lines, isEdit = false) {
+  function parseMovieMessage(lines) {
     if (lines.length < 5) return null;
     
-    let section = lines[0].toLowerCase();
-    if (section === "webseries") section = "webSeries";
+    let section = lines[0].toLowerCase().trim();
     
-    if (!["popular", "webseries", "upcoming", "banner"].includes(section)) {
+    if (!sections.includes(section)) {
       return null;
     }
     
-    let title = processEmojis(lines[1]);
+    let title = lines[1];
     let year = lines[2];
     let poster = lines[3];
-    let rating = processEmojis(lines[4]);
+    let rating = lines[4];
     let duration = lines[5];
     let director = lines[6];
     
-    // Collect genres from line 7 until we hit a line that doesn't look like a genre
     let genreLines = [];
     let currentIndex = 7;
     while (currentIndex < lines.length) {
       let line = lines[currentIndex];
-      // Stop if we hit plot (typically starts with text, not # or emoji symbols)
       if (line && !line.startsWith('#') && !line.startsWith('🌋') && !line.startsWith('🎭') && 
           !line.startsWith('📜') && !line.startsWith('🧟') && !line.startsWith('🎬') &&
           !line.startsWith('⭐') && line.length > 30) {
         break;
       }
-      // Stop if we hit language line (common language names)
       if (line && (line.toLowerCase() === 'hindi' || line.toLowerCase() === 'kannada' || 
           line.toLowerCase() === 'english' || line.toLowerCase() === 'tamil' ||
           line.toLowerCase() === 'telugu' || line.toLowerCase() === 'malayalam')) {
@@ -141,18 +130,15 @@ export default async function handler(req, res) {
       currentIndex++;
     }
     
-    // Join genre lines and split by # to keep emojis attached
     const genreText = genreLines.join(' ');
     const genres = genreText.match(/#[^#]+/g)?.map(g => g.trim()) || [];
     
-    // Remaining lines
     let plot = lines[currentIndex] || '';
     let language = lines[currentIndex + 1] || '';
     let quality = lines[currentIndex + 2] || '';
     let streamLink = lines[currentIndex + 3] || '';
     let telegramLink = lines[currentIndex + 4] || '';
     
-    // If plot seems too short, combine more lines
     if (plot.length < 20 && lines[currentIndex + 5]) {
       plot = plot + ' ' + lines[currentIndex + 5];
     }
@@ -181,13 +167,12 @@ export default async function handler(req, res) {
     let lines = text.split("\n").map(l => l.trim()).filter(Boolean);
     if (lines.length < 8) return res.status(200).send("OK");
 
-    let section = lines[0].toLowerCase();
-    if (section === "webseries") section = "webSeries";
+    let section = lines[0].toLowerCase().trim();
 
     let item = db[section]?.find(m => m.messageId === messageId);
     if (!item) return res.status(200).send("OK");
 
-    let parsed = parseMovieMessage(lines, true);
+    let parsed = parseMovieMessage(lines);
     if (!parsed) return res.status(200).send("OK");
 
     let newTitle = parsed.movie.title;
@@ -294,13 +279,18 @@ export default async function handler(req, res) {
   res.status(200).send("OK");
 
   async function updateDB(data) {
-    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Master-Key": API_KEY
-      },
-      body: JSON.stringify(data)
-    });
+    try {
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Master-Key": API_KEY
+        },
+        body: JSON.stringify(data)
+      });
+      console.log("DB Update Status:", res.status);
+    } catch(e) {
+      console.error("DB Update Error:", e);
+    }
   }
 }
