@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     return res.status(200).send("OK");
   }
 
-  const sections = ["popular", "webSeries", "upcoming", "bannerSlides"];
+  const sections = ["popular", "webseries", "upcoming", "banner"];
 
   function normalize(title) {
     return title.toLowerCase().trim();
@@ -109,7 +109,7 @@ export default async function handler(req, res) {
     let section = lines[0].toLowerCase();
     if (section === "webseries") section = "webSeries";
     
-    if (!["popular", "webSeries", "upcoming"].includes(section)) {
+    if (!["popular", "webseries", "upcoming", "banner"].includes(section)) {
       return null;
     }
     
