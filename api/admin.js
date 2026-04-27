@@ -164,7 +164,7 @@ export default async function handler(req, res) {
       rating: processEmojis(lines[4]),
       duration: lines[5],
       director: lines[6],
-      genres: lines[7].split(",").map(g => g.trim()),
+      genres: lines[7].match(/#[^#]+/g).map(g => g.trim()),
       plot: lines[8],
       language: lines[9].split(",").map(l => l.trim()),
       quality: lines[10],
