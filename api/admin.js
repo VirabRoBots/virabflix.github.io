@@ -1,4 +1,4 @@
-const BOT_TOKEN = "8458711873:AAHBiPv2XWDZ3WuGaRCZvejat8bEIfwVZkk";
+const BOT_TOKEN = "8625032875:AAGy963USUhyALpKMQMTRqw0A45MnKD6lI0";
 const BIN_ID = "69edd100856a6821897367c9";
 const API_KEY = "$2a$10$TyOXeu0PPOnyzTfOreJzhOKiw3NyMQtnURo0koS2JFiOFMatKoDgq";
 
@@ -16,6 +16,7 @@ export default async function handler(req, res) {
 
   const text = msg.text;
   const messageId = msg.message_id;
+  const chatId = msg.chat.id;
 
   let db;
   try {
@@ -34,6 +35,12 @@ export default async function handler(req, res) {
     return title.toLowerCase().trim();
   }
 
+  // Function to process emojis in text
+  function processEmojis(text) {
+    // This preserves emojis as they are in Telegram messages
+    return text;
+  }
+
   function findDuplicate(title, excludeMessageId = null) {
     const t = normalize(title);
     for (let sec of sections) {
@@ -46,6 +53,76 @@ export default async function handler(req, res) {
     return null;
   }
 
+  // Function to send delete button below a message
+  async function addDeleteButton(chatId, messageId, title) {
+    const inlineKeyboard = {
+      inline_keyboard: [[
+        {
+          text: "🗑️ Delete",
+          callback_data: `delete_${title}`
+        }
+      ]]
+    };
+
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        reply_to_message_id: messageId,
+        text: "⬆️ Click button above to delete this item",
+        reply_markup: inlineKeyboard
+      })
+    });
+  }
+
+  // Handle callback queries (button clicks)
+  if (body.callback_query) {
+    const callbackData = body.callback_query.data;
+    const callbackChatId = body.callback_query.message.chat.id;
+    const callbackMessageId = body.callback_query.message.message_id;
+
+    if (callbackData.startsWith("delete_")) {
+      const titleToDelete = callbackData.replace("delete_", "");
+      
+      let deleted = false;
+      for (let sec of sections) {
+        if (!db[sec]) continue;
+        const before = db[sec].length;
+        db[sec] = db[sec].filter(m => normalize(m.title) !== normalize(titleToDelete));
+        if (db[sec].length !== before) deleted = true;
+      }
+
+      if (deleted) {
+        await updateDB(db);
+        
+        // Edit the button message to show it was deleted
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: callbackChatId,
+            message_id: callbackMessageId,
+            text: `✅ "${titleToDelete}" has been deleted successfully!`
+          })
+        });
+        
+        // Optional: Delete the original content message
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/deleteMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: callbackChatId,
+            message_id: callbackMessageId - 1 // Assuming button is reply to original message
+          })
+        }).catch(() => {});
+      }
+    }
+    
+    return res.status(200).send("OK");
+  }
+
+  // Handle edited posts
   if (body.edited_channel_post) {
     let lines = text.split("\n").map(l => l.trim()).filter(Boolean);
     if (lines.length < 13) return res.status(200).send("OK");
@@ -56,15 +133,15 @@ export default async function handler(req, res) {
     let item = db[section]?.find(m => m.messageId === messageId);
     if (!item) return res.status(200).send("OK");
 
-    let newTitle = lines[1];
+    let newTitle = processEmojis(lines[1]);
     let duplicate = findDuplicate(newTitle, messageId);
     if (duplicate) return res.status(200).send("OK");
 
     Object.assign(item, {
-      title: lines[1],
+      title: newTitle,
       year: lines[2],
       poster: lines[3],
-      rating: lines[4],
+      rating: processEmojis(lines[4]), // Support emojis in rating (stars)
       duration: lines[5],
       director: lines[6],
       genres: lines[7].split(",").map(g => g.trim()),
@@ -79,6 +156,7 @@ export default async function handler(req, res) {
     return res.status(200).send("OK");
   }
 
+  // Handle new posts
   if (!text.startsWith("/")) {
     let lines = text.split("\n").map(l => l.trim()).filter(Boolean);
     if (lines.length < 13) return res.status(200).send("OK");
@@ -90,7 +168,7 @@ export default async function handler(req, res) {
       return res.status(200).send("OK");
     }
 
-    let title = lines[1];
+    let title = processEmojis(lines[1]);
     let duplicate = findDuplicate(title);
     if (duplicate) return res.status(200).send("OK");
 
@@ -101,7 +179,7 @@ export default async function handler(req, res) {
       title: title,
       year: lines[2],
       poster: lines[3],
-      rating: lines[4],
+      rating: processEmojis(lines[4]), // Support emojis like ⭐, ★, etc.
       duration: lines[5],
       director: lines[6],
       genres: lines[7].split(",").map(g => g.trim()),
@@ -115,26 +193,15 @@ export default async function handler(req, res) {
 
     db[section].unshift(movie);
     await updateDB(db);
+    
+    // Add delete button below the message
+    await addDeleteButton(chatId, messageId, title);
+    
     return res.status(200).send("OK");
   }
 
-  if (text.startsWith("/del")) {
-    let name = text.replace("/del", "").trim();
-    if (!name) return res.status(200).send("OK");
-
-    let found = false;
-    for (let sec of sections) {
-      if (!db[sec]) continue;
-      let before = db[sec].length;
-      db[sec] = db[sec].filter(m => normalize(m.title) !== normalize(name));
-      if (db[sec].length !== before) found = true;
-    }
-
-    if (!found) return res.status(200).send("OK");
-    await updateDB(db);
-    return res.status(200).send("OK");
-  }
-
+  // Remove /del command handling completely
+  
   res.status(200).send("OK");
 
   async function updateDB(data) {
