@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     return res.status(200).send("OK");
   }
 
-  const sections = ["popular", "webseries", "upcoming", "banner"];
+  const sections = ["popular", "webseries", "upcoming", "bannerSlides"];
 
   function normalize(title) {
     return title.toLowerCase().trim();
