@@ -17,7 +17,12 @@ export default async function handler(req, res) {
     });
     const json = await dataRes.json();
     db = json.record;
+    if (!db.bannerSlides) db.bannerSlides = [];
+    if (!db.popular) db.popular = [];
+    if (!db.webseries) db.webseries = [];
+    if (!db.upcoming) db.upcoming = [];
   } catch (error) {
+    console.error("DB Fetch Error:", error);
     return res.status(200).send("OK");
   }
 
@@ -50,10 +55,13 @@ export default async function handler(req, res) {
       const titleToDelete = callbackData.replace("delete_", "");
       
       let deleted = false;
+      let deletedMessageId = null;
+      
       for (let sec of sections) {
         if (!db[sec]) continue;
         const foundItem = db[sec].find(m => normalize(m.title) === normalize(titleToDelete));
         if (foundItem) {
+          deletedMessageId = foundItem.messageId;
           db[sec] = db[sec].filter(m => normalize(m.title) !== normalize(titleToDelete));
           deleted = true;
           break;
@@ -83,6 +91,31 @@ export default async function handler(req, res) {
           })
         }).catch(err => console.error("Error deleting button message:", err));
       }
+    }
+    else if (callbackData.startsWith("banner_")) {
+      const bannerIndex = parseInt(callbackData.replace("banner_", ""));
+      const banner = db.bannerSlides[bannerIndex];
+      
+      if (banner && banner.telegramLink) {
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: callbackChatId,
+            text: `🎬 *${banner.title}*\n\n📅 Year: ${banner.year}\n⭐ Rating: ${banner.rating}\n⏱️ Duration: ${banner.duration}\n🎭 Director: ${banner.director}\n\n📜 *Plot:* ${banner.plot}\n\n🔗 [Watch Now](${banner.telegramLink})`,
+            parse_mode: "Markdown",
+            disable_web_page_preview: false
+          })
+        });
+      }
+      
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          callback_query_id: body.callback_query.id
+        })
+      });
     }
     
     return res.status(200).send("OK");
@@ -162,6 +195,94 @@ export default async function handler(req, res) {
     };
   }
 
+  // Handle banner command
+  if (text.startsWith("/banner")) {
+    let lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+    if (lines.length < 8) {
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: "❌ Invalid banner format. Use:\n/banner\n[Title]\n[Year]\n[Poster URL]\n[Rating]\n[Duration]\n[Director]\n[Plot]\n[Telegram Link]"
+        })
+      });
+      return res.status(200).send("OK");
+    }
+
+    const banner = {
+      messageId: messageId,
+      title: lines[1],
+      year: lines[2],
+      poster: lines[3],
+      rating: lines[4],
+      duration: lines[5],
+      director: lines[6],
+      plot: lines[7],
+      telegramLink: lines[8] || "",
+      addedAt: Date.now()
+    };
+
+    if (!db.bannerSlides) db.bannerSlides = [];
+    db.bannerSlides.push(banner);
+    await updateDB(db);
+
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: `✅ Banner "${banner.title}" has been added successfully!`
+      })
+    });
+
+    return res.status(200).send("OK");
+  }
+
+  // Handle /showbanner command
+  if (text.startsWith("/showbanner")) {
+    if (!db.bannerSlides || db.bannerSlides.length === 0) {
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: "❌ No banners available."
+        })
+      });
+      return res.status(200).send("OK");
+    }
+
+    // Create inline keyboard for banner navigation
+    const keyboardButtons = [];
+    for (let i = 0; i < db.bannerSlides.length; i++) {
+      keyboardButtons.push([{
+        text: `📺 ${db.bannerSlides[i].title}`,
+        callback_data: `banner_${i}`
+      }]);
+    }
+
+    // Show the first banner as preview
+    const firstBanner = db.bannerSlides[0];
+    const caption = `🎬 *BANNER CAROUSEL*\n\n📌 Total Banners: ${db.bannerSlides.length}\n\n🎯 *Current:* ${firstBanner.title}\n📅 ${firstBanner.year} | ⭐ ${firstBanner.rating}\n\n👇 *Click below to watch any banner* 👇`;
+
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        photo: firstBanner.poster,
+        caption: caption,
+        parse_mode: "Markdown",
+        reply_markup: {
+          inline_keyboard: keyboardButtons
+        }
+      })
+    });
+
+    return res.status(200).send("OK");
+  }
+
   // Handle edited posts
   if (body.edited_channel_post) {
     let lines = text.split("\n").map(l => l.trim()).filter(Boolean);
@@ -233,7 +354,17 @@ export default async function handler(req, res) {
   // Handle /del command
   if (text.startsWith("/del")) {
     let name = text.replace("/del", "").trim();
-    if (!name) return res.status(200).send("OK");
+    if (!name) {
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: "❌ Please provide a title to delete.\nUsage: /del [Movie Title]"
+        })
+      });
+      return res.status(200).send("OK");
+    }
 
     let found = false;
     let foundMessageId = null;
@@ -249,7 +380,17 @@ export default async function handler(req, res) {
       }
     }
 
-    if (!found) return res.status(200).send("OK");
+    if (!found) {
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: `❌ "${name}" not found in database.`
+        })
+      });
+      return res.status(200).send("OK");
+    }
     
     await updateDB(db);
     
@@ -280,7 +421,7 @@ export default async function handler(req, res) {
 
   async function updateDB(data) {
     try {
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+      const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -288,7 +429,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify(data)
       });
-      console.log("DB Update Status:", res.status);
+      console.log("DB Update Status:", response.status);
     } catch(e) {
       console.error("DB Update Error:", e);
     }
