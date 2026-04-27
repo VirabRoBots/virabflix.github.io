@@ -2,30 +2,21 @@ const BOT_TOKEN = "8458711873:AAHBiPv2XWDZ3WuGaRCZvejat8bEIfwVZkk";
 const BIN_ID = "69edd100856a6821897367c9";
 const API_KEY = "$2a$10$TyOXeu0PPOnyzTfOreJzhOKiw3NyMQtnURo0koS2JFiOFMatKoDgq";
 
-const ADMINS = ["6887303054"];
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(200).send("OK");
   }
 
   const body = req.body;
-  const msg = body.message || body.edited_message;
+  const msg = body.channel_post || body.edited_channel_post;
 
   if (!msg || !msg.text) {
     return res.status(200).send("OK");
   }
 
-  const chatId = msg.chat.id.toString();
   const text = msg.text;
+  const messageId = msg.message_id;
 
-  if (!ADMINS.includes(chatId)) {
-    return res.status(200).send("OK");
-  }
-
-  // =========================
-  // 📥 FETCH DB
-  // =========================
   let db;
   try {
     const dataRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
@@ -34,51 +25,40 @@ export default async function handler(req, res) {
     const json = await dataRes.json();
     db = json.record;
   } catch (error) {
-    await send(chatId, "❌ DB fetch failed");
     return res.status(200).send("OK");
   }
 
-  // =========================
-  // 🧠 HELPERS
-  // =========================
   const sections = ["popular", "webSeries", "upcoming", "bannerSlides"];
 
   function normalize(title) {
     return title.toLowerCase().trim();
   }
 
-  function findDuplicate(title) {
+  function findDuplicate(title, excludeMessageId = null) {
     const t = normalize(title);
-
     for (let sec of sections) {
       if (!db[sec]) continue;
-
       let found = db[sec].find(m => normalize(m.title) === t);
-      if (found) return { section: sec, item: found };
+      if (found && (excludeMessageId === null || found.messageId !== excludeMessageId)) {
+        return { section: sec, item: found };
+      }
     }
     return null;
   }
 
-  // =========================
-  // ✏️ EDIT (message edited)
-  // =========================
-  if (body.edited_message) {
+  if (body.edited_channel_post) {
     let lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-    if (lines.length < 13) return res.send("OK");
+    if (lines.length < 13) return res.status(200).send("OK");
 
     let section = lines[0].toLowerCase();
     if (section === "webseries") section = "webSeries";
 
-    let item = db[section]?.find(m => m.messageId === msg.message_id);
-    if (!item) return res.send("OK");
+    let item = db[section]?.find(m => m.messageId === messageId);
+    if (!item) return res.status(200).send("OK");
 
     let newTitle = lines[1];
-
-    let duplicate = findDuplicate(newTitle);
-    if (duplicate && duplicate.item.messageId !== msg.message_id) {
-      await send(chatId, `⚠️ Duplicate in ${duplicate.section}`);
-      return res.send("OK");
-    }
+    let duplicate = findDuplicate(newTitle, messageId);
+    if (duplicate) return res.status(200).send("OK");
 
     Object.assign(item, {
       title: lines[1],
@@ -96,36 +76,28 @@ export default async function handler(req, res) {
     });
 
     await updateDB(db);
-    return res.send("OK");
+    return res.status(200).send("OK");
   }
 
-  // =========================
-  // ➕ AUTO ADD
-  // =========================
   if (!text.startsWith("/")) {
     let lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-
-    if (lines.length < 13) return res.send("OK");
+    if (lines.length < 13) return res.status(200).send("OK");
 
     let section = lines[0].toLowerCase();
     if (section === "webseries") section = "webSeries";
 
     if (!["popular", "webSeries", "upcoming"].includes(section)) {
-      return res.send("OK");
+      return res.status(200).send("OK");
     }
 
     let title = lines[1];
-
     let duplicate = findDuplicate(title);
-    if (duplicate) {
-      await send(chatId, `⚠️ Duplicate already in ${duplicate.section}`);
-      return res.send("OK");
-    }
+    if (duplicate) return res.status(200).send("OK");
 
     if (!db[section]) db[section] = [];
 
     let movie = {
-      messageId: msg.message_id,
+      messageId: messageId,
       title: title,
       year: lines[2],
       poster: lines[3],
@@ -141,54 +113,32 @@ export default async function handler(req, res) {
       addedAt: Date.now()
     };
 
-    // 🔥 Reverse order (NEW FIRST)
     db[section].unshift(movie);
-
     await updateDB(db);
-    return res.send("OK");
+    return res.status(200).send("OK");
   }
 
-  // =========================
-  // ❌ DELETE (manual)
-  // =========================
   if (text.startsWith("/del")) {
     let name = text.replace("/del", "").trim();
-
-    if (!name) {
-      await send(chatId, "❌ Usage: /del name");
-      return res.send("OK");
-    }
+    if (!name) return res.status(200).send("OK");
 
     let found = false;
-
     for (let sec of sections) {
       if (!db[sec]) continue;
-
       let before = db[sec].length;
-      db[sec] = db[sec].filter(
-        m => normalize(m.title) !== normalize(name)
-      );
-
+      db[sec] = db[sec].filter(m => normalize(m.title) !== normalize(name));
       if (db[sec].length !== before) found = true;
     }
 
-    if (!found) {
-      await send(chatId, "❌ Not found");
-      return res.send("OK");
-    }
-
+    if (!found) return res.status(200).send("OK");
     await updateDB(db);
-    await send(chatId, "🗑 Deleted");
-    return res.send("OK");
+    return res.status(200).send("OK");
   }
 
   res.status(200).send("OK");
 
-  // =========================
-  // 🔄 UPDATE DB
-  // =========================
   async function updateDB(data) {
-    const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -196,26 +146,5 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify(data)
     });
-
-    if (!response.ok) throw new Error("DB update failed");
-    return response.json();
-  }
-
-  // =========================
-  // 📤 SEND MESSAGE
-  // =========================
-  async function send(chat, text) {
-    try {
-      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: chat,
-          text: text
-        })
-      });
-    } catch (e) {
-      console.error("Send error:", e);
-    }
   }
 }
