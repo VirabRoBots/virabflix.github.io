@@ -2,8 +2,7 @@ const BOT_TOKEN = "8458711873:AAHBiPv2XWDZ3WuGaRCZvejat8bEIfwVZkk";
 const BIN_ID = "69edd100856a6821897367c9";
 const API_KEY = "$2a$10$TyOXeu0PPOnyzTfOreJzhOKiw3NyMQtnURo0koS2JFiOFMatKoDgq";
 
-// space separated admins
-const ADMINS = "6887303054".split(" ");
+const ADMINS = ["6887303054"];
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -11,7 +10,7 @@ export default async function handler(req, res) {
   }
 
   const body = req.body;
-  const msg = body.message;
+  const msg = body.message || body.edited_message;
 
   if (!msg || !msg.text) {
     return res.status(200).send("OK");
@@ -20,12 +19,13 @@ export default async function handler(req, res) {
   const chatId = msg.chat.id.toString();
   const text = msg.text;
 
-  // ❌ Not admin
   if (!ADMINS.includes(chatId)) {
     return res.status(200).send("OK");
   }
 
-  // 📥 Fetch current data
+  // =========================
+  // 📥 FETCH DB
+  // =========================
   let db;
   try {
     const dataRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
@@ -34,224 +34,159 @@ export default async function handler(req, res) {
     const json = await dataRes.json();
     db = json.record;
   } catch (error) {
-    await send(chatId, "❌ Failed to fetch database");
+    await send(chatId, "❌ DB fetch failed");
     return res.status(200).send("OK");
   }
 
   // =========================
-  // ➕ ADD (BANNER with FULL details - 13 lines)
+  // 🧠 HELPERS
   // =========================
-  if (text.startsWith("/add")) {
-    let lines = text.split("\n");
-    lines.shift(); // Remove "/add"
-    lines = lines.filter(line => line.trim().length > 0);
-    
-    if (lines.length < 2) {
-      await send(chatId, "❌ Invalid format");
-      return res.status(200).send("OK");
-    }
+  const sections = ["popular", "webSeries", "upcoming", "bannerSlides"];
 
-    let section = lines[0].toLowerCase().trim();
-    
-    // ========== BANNER SECTION WITH FULL DETAILS ==========
-    if (section === "banner") {
-      if (lines.length < 13) {
-        await send(chatId, `❌ Banner needs 13 lines! Got ${lines.length}\n\nFormat:\n1. banner\n2. title\n3. year\n4. poster\n5. rating\n6. duration\n7. director\n8. genres\n9. plot\n10. language\n11. quality\n12. streamLink\n13. telegramLink\n14. type (optional)`);
-        return res.status(200).send("OK");
-      }
-      
-      if (!db.bannerSlides) db.bannerSlides = [];
-      
-      let banner = {
-        title: lines[1].trim(),
-        year: lines[2].trim(),
-        poster: lines[3].trim(),
-        rating: lines[4].trim(),
-        duration: lines[5].trim(),
-        director: lines[6].trim(),
-        genres: lines[7].split(",").map(g => g.trim()),
-        plot: lines[8].trim(),
-        language: lines[9].trim().split(",").map(l => l.trim()),
-        quality: lines[10].trim(),
-        streamLink: lines[11].trim(),
-        telegramLink: lines[12].trim(),
-        type: lines[13] ? lines[13].trim() : "Movie" // Optional type field
-      };
-      
-      // Check exists
-      let exists = db.bannerSlides.find(b => b.title === banner.title);
-      if (exists) {
-        await send(chatId, `⚠️ Banner "${banner.title}" already exists`);
-        return res.status(200).send("OK");
-      }
-      
-      db.bannerSlides.push(banner);
-      
-      try {
-        await updateDB(db);
-        await send(chatId, `✅ Banner added with full details!\nTitle: ${banner.title}\nYear: ${banner.year}\nRating: ${banner.rating}\nLanguage: ${banner.language.join(", ")}`);
-      } catch (error) {
-        await send(chatId, "❌ Failed to update database");
-      }
-      return res.status(200).send("OK");
-    }
-    
-    // ========== REGULAR MOVIES (popular, webseries, upcoming) ==========
-    if (lines.length < 13) {
-      await send(chatId, `❌ Need 13 lines! Got ${lines.length}\n\nFormat:\n1. section\n2. title\n3. year\n4. poster\n5. rating\n6. duration\n7. director\n8. genres\n9. plot\n10. language\n11. quality\n12. streamLink\n13. telegramLink`);
-      return res.status(200).send("OK");
-    }
+  function normalize(title) {
+    return title.toLowerCase().trim();
+  }
 
-    if (!["popular", "webseries", "upcoming"].includes(section)) {
-      await send(chatId, "❌ Invalid section! Use: popular, webseries, upcoming, or banner");
-      return res.status(200).send("OK");
+  function findDuplicate(title) {
+    const t = normalize(title);
+
+    for (let sec of sections) {
+      if (!db[sec]) continue;
+
+      let found = db[sec].find(m => normalize(m.title) === t);
+      if (found) return { section: sec, item: found };
     }
-    
+    return null;
+  }
+
+  // =========================
+  // ✏️ EDIT (message edited)
+  // =========================
+  if (body.edited_message) {
+    let lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+    if (lines.length < 13) return res.send("OK");
+
+    let section = lines[0].toLowerCase();
     if (section === "webseries") section = "webSeries";
-    
-    let title = lines[1].trim();
-    
+
+    let item = db[section]?.find(m => m.messageId === msg.message_id);
+    if (!item) return res.send("OK");
+
+    let newTitle = lines[1];
+
+    let duplicate = findDuplicate(newTitle);
+    if (duplicate && duplicate.item.messageId !== msg.message_id) {
+      await send(chatId, `⚠️ Duplicate in ${duplicate.section}`);
+      return res.send("OK");
+    }
+
+    Object.assign(item, {
+      title: lines[1],
+      year: lines[2],
+      poster: lines[3],
+      rating: lines[4],
+      duration: lines[5],
+      director: lines[6],
+      genres: lines[7].split(",").map(g => g.trim()),
+      plot: lines[8],
+      language: lines[9].split(",").map(l => l.trim()),
+      quality: lines[10],
+      streamLink: lines[11],
+      telegramLink: lines[12]
+    });
+
+    await updateDB(db);
+    return res.send("OK");
+  }
+
+  // =========================
+  // ➕ AUTO ADD
+  // =========================
+  if (!text.startsWith("/")) {
+    let lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+
+    if (lines.length < 13) return res.send("OK");
+
+    let section = lines[0].toLowerCase();
+    if (section === "webseries") section = "webSeries";
+
+    if (!["popular", "webSeries", "upcoming"].includes(section)) {
+      return res.send("OK");
+    }
+
+    let title = lines[1];
+
+    let duplicate = findDuplicate(title);
+    if (duplicate) {
+      await send(chatId, `⚠️ Duplicate already in ${duplicate.section}`);
+      return res.send("OK");
+    }
+
     if (!db[section]) db[section] = [];
 
-    let exists = db[section]?.find(m => m.title === title);
-    if (exists) {
-      await send(chatId, `⚠️ Already added: "${title}" in ${section}`);
-      return res.status(200).send("OK");
-    }
-
     let movie = {
+      messageId: msg.message_id,
       title: title,
-      year: lines[2].trim(),
-      poster: lines[3].trim(),
-      rating: lines[4].trim(),
-      duration: lines[5].trim(),
-      director: lines[6].trim(),
+      year: lines[2],
+      poster: lines[3],
+      rating: lines[4],
+      duration: lines[5],
+      director: lines[6],
       genres: lines[7].split(",").map(g => g.trim()),
-      plot: lines[8].trim(),
-      language: lines[9].trim().split(",").map(l => l.trim()),
-      quality: lines[10].trim(),
-      streamLink: lines[11].trim(),
-      telegramLink: lines[12].trim()
+      plot: lines[8],
+      language: lines[9].split(",").map(l => l.trim()),
+      quality: lines[10],
+      streamLink: lines[11],
+      telegramLink: lines[12],
+      addedAt: Date.now()
     };
 
-    db[section].push(movie);
+    // 🔥 Reverse order (NEW FIRST)
+    db[section].unshift(movie);
 
-    try {
-      await updateDB(db);
-      await send(chatId, `✅ Added successfully!\n\nSection: ${section}\nTitle: ${title}\nYear: ${movie.year}`);
-    } catch (error) {
-      await send(chatId, "❌ Failed to update database");
-    }
-    
-    return res.status(200).send("OK");
+    await updateDB(db);
+    return res.send("OK");
   }
 
   // =========================
-  // ✏️ EDIT
-  // =========================
-  if (text.startsWith("/edit")) {
-    let lines = text.split("\n");
-    lines.shift();
-    lines = lines.filter(line => line.trim().length > 0);
-    
-    if (lines.length < 3) {
-      await send(chatId, "❌ Format:\n/edit\nsection\ntitle\nfield:value");
-      return res.status(200).send("OK");
-    }
-
-    let section = lines[0].toLowerCase().trim();
-    if (section === "webseries") section = "webSeries";
-    
-    if (!["popular", "webSeries", "upcoming", "bannerSlides"].includes(section)) {
-      await send(chatId, "❌ Invalid section!");
-      return res.status(200).send("OK");
-    }
-    
-    let oldTitle = lines[1].trim();
-    let changes = lines.slice(2);
-    
-    let itemIndex = db[section]?.findIndex(m => m.title === oldTitle);
-    
-    if (itemIndex === -1 || !db[section][itemIndex]) {
-      await send(chatId, `❌ "${oldTitle}" not found in ${section}`);
-      return res.status(200).send("OK");
-    }
-    
-    let updatedFields = [];
-    for (let change of changes) {
-      let colonIndex = change.indexOf(":");
-      if (colonIndex === -1) continue;
-      
-      let field = change.substring(0, colonIndex).trim().toLowerCase();
-      let value = change.substring(colonIndex + 1).trim();
-      
-      if (db[section][itemIndex].hasOwnProperty(field)) {
-        if (field === "genres" || field === "language") {
-          db[section][itemIndex][field] = value.split(",").map(v => v.trim());
-        } else {
-          db[section][itemIndex][field] = value;
-        }
-        updatedFields.push(field);
-      }
-    }
-    
-    if (updatedFields.length === 0) {
-      await send(chatId, "❌ No valid fields to update");
-      return res.status(200).send("OK");
-    }
-    
-    try {
-      await updateDB(db);
-      await send(chatId, `✅ Updated "${oldTitle}"\nChanged: ${updatedFields.join(", ")}`);
-    } catch (error) {
-      await send(chatId, "❌ Failed to update database");
-    }
-    
-    return res.status(200).send("OK");
-  }
-
-  // =========================
-  // ❌ DELETE
+  // ❌ DELETE (manual)
   // =========================
   if (text.startsWith("/del")) {
     let name = text.replace("/del", "").trim();
-    
+
     if (!name) {
-      await send(chatId, "❌ Usage: /del [movie title]");
-      return res.status(200).send("OK");
+      await send(chatId, "❌ Usage: /del name");
+      return res.send("OK");
     }
 
     let found = false;
-    let deletedFrom = [];
 
-    for (let key of ["popular", "webSeries", "upcoming", "bannerSlides"]) {
-      if (db[key]) {
-        let before = db[key].length;
-        db[key] = db[key].filter(m => m.title !== name);
-        if (db[key].length !== before) {
-          found = true;
-          deletedFrom.push(key);
-        }
-      }
+    for (let sec of sections) {
+      if (!db[sec]) continue;
+
+      let before = db[sec].length;
+      db[sec] = db[sec].filter(
+        m => normalize(m.title) !== normalize(name)
+      );
+
+      if (db[sec].length !== before) found = true;
     }
 
     if (!found) {
-      await send(chatId, `❌ "${name}" not found`);
-      return res.status(200).send("OK");
+      await send(chatId, "❌ Not found");
+      return res.send("OK");
     }
 
-    try {
-      await updateDB(db);
-      await send(chatId, `🗑 Deleted "${name}" from: ${deletedFrom.join(", ")}`);
-    } catch (error) {
-      await send(chatId, "❌ Failed to update database");
-    }
-    
-    return res.status(200).send("OK");
+    await updateDB(db);
+    await send(chatId, "🗑 Deleted");
+    return res.send("OK");
   }
 
   res.status(200).send("OK");
 
+  // =========================
+  // 🔄 UPDATE DB
+  // =========================
   async function updateDB(data) {
     const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
       method: "PUT",
@@ -261,13 +196,14 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify(data)
     });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
+
+    if (!response.ok) throw new Error("DB update failed");
     return response.json();
   }
 
+  // =========================
+  // 📤 SEND MESSAGE
+  // =========================
   async function send(chat, text) {
     try {
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -278,8 +214,8 @@ export default async function handler(req, res) {
           text: text
         })
       });
-    } catch (error) {
-      console.error("Failed to send message:", error);
+    } catch (e) {
+      console.error("Send error:", e);
     }
   }
 }
