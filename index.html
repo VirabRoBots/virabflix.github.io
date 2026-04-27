@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -814,12 +815,6 @@
   <script>
     let loadingTimer = null;
     let loadingCancelled = false;
-    let movieData = {
-      popular: [],
-      upcoming: [],
-      webSeries: [],
-      bannerSlides: []
-    };
 
     function resetURL() {
       window.history.pushState({}, '', window.location.pathname);
@@ -957,6 +952,69 @@
         window.history.replaceState({}, '', newUrl);
       }
     }
+    // Simple cache with auto-update
+    let movieData = {
+      popular: [],
+      upcoming: [],
+      webSeries: [],
+      bannerSlides: []
+    };
+    // Save to cache
+    function saveToCache() {
+      try {
+        localStorage.setItem('movieData', JSON.stringify({
+          data: movieData,
+          timestamp: Date.now()
+        }));
+      } catch (e) {}
+    }
+    // Load from cache
+    function loadFromCache() {
+      try {
+        const cached = localStorage.getItem('movieData');
+        if (!cached) return false;
+        const item = JSON.parse(cached);
+        movieData = item.data;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+    // Main load function - always fetches fresh data
+    async function loadMovies() {
+      try {
+        let res = await fetch("https://api.jsonbin.io/v3/b/69edd100856a6821897367c9/latest", {
+          headers: {
+            "X-Master-Key": "$2a$10$TyOXeu0PPOnyzTfOreJzhOKiw3NyMQtnURo0koS2JFiOFMatKoDgq"
+          }
+        });
+        if (!res.ok) throw new Error();
+        let json = await res.json();
+        // Update movieData with fresh data
+        movieData = json.record;
+        // Save to cache immediately
+        saveToCache();
+        // Render everything
+        renderAll();
+        initBanner();
+        initSearch();
+        loadMovieFromUrl();
+        initTelegramStream();
+      } catch (e) {
+        console.error('Failed to load', e);
+        // Only use cache if API fails
+        if (loadFromCache()) {
+          renderAll();
+          initBanner();
+          initSearch();
+          loadMovieFromUrl();
+          initTelegramStream();
+        } else {
+          document.getElementById('popularMovies').innerHTML =
+            '<div style="padding:20px;text-align:center">⚠️ Failed to load data</div>';
+        }
+      }
+    }
 
     function loadMovieFromUrl() {
       let params = new URLSearchParams(window.location.search);
@@ -970,43 +1028,6 @@
         if (foundMovie) {
           setTimeout(() => openModal(foundMovie), 500);
         }
-      }
-    }
-    async function loadMovies() {
-      try {
-        let res = await fetch("https://api.jsonbin.io/v3/b/69edd100856a6821897367c9/latest", {
-          headers: {
-            "X-Master-Key": "$2a$10$TyOXeu0PPOnyzTfOreJzhOKiw3NyMQtnURo0koS2JFiOFMatKoDgq"
-          }
-        });
-        if (!res.ok) throw new Error();
-        let json = await res.json();
-        movieData = json.record;
-        renderAll();
-        initBanner();
-        initSearch();
-        loadMovieFromUrl();
-        setTimeout(() => {
-          document.querySelectorAll('.banner-watch-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-              e.stopPropagation();
-              let title = btn.getAttribute('data-title');
-              // Search in all sections including banner
-              let found = [
-                ...movieData.popular,
-                ...movieData.upcoming,
-                ...movieData.webSeries,
-                ...movieData.bannerSlides
-              ].find(m => m.title === title);
-              found ? openModal(found) : showToast('Not found');
-            });
-          });
-        }, 100);
-        initTelegramStream();
-      } catch (e) {
-        console.error('Failed to load JSONBin', e);
-        document.getElementById('popularMovies').innerHTML =
-          '<div style="padding:20px;text-align:center">⚠️ Failed to load data</div>';
       }
     }
 
