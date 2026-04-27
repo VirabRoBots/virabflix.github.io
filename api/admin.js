@@ -69,7 +69,6 @@ export default async function handler(req, res) {
       if (deleted) {
         await updateDB(db);
         
-        // Delete the original message
         if (originalMessageId) {
           await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/deleteMessage`, {
             method: "POST",
@@ -81,7 +80,6 @@ export default async function handler(req, res) {
           }).catch(err => console.error("Error deleting original message:", err));
         }
         
-        // Delete the button message as well
         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/deleteMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -104,10 +102,84 @@ export default async function handler(req, res) {
   const messageId = msg.message_id;
   const chatId = msg.chat.id;
 
+  // Parse multi-line movies
+  function parseMovieMessage(lines, isEdit = false) {
+    if (lines.length < 5) return null;
+    
+    let section = lines[0].toLowerCase();
+    if (section === "webseries") section = "webSeries";
+    
+    if (!["popular", "webSeries", "upcoming"].includes(section)) {
+      return null;
+    }
+    
+    let title = processEmojis(lines[1]);
+    let year = lines[2];
+    let poster = lines[3];
+    let rating = processEmojis(lines[4]);
+    let duration = lines[5];
+    let director = lines[6];
+    
+    // Collect genres from line 7 until we hit a line that doesn't look like a genre
+    let genreLines = [];
+    let currentIndex = 7;
+    while (currentIndex < lines.length) {
+      let line = lines[currentIndex];
+      // Stop if we hit plot (typically starts with text, not # or emoji symbols)
+      if (line && !line.startsWith('#') && !line.startsWith('🌋') && !line.startsWith('🎭') && 
+          !line.startsWith('📜') && !line.startsWith('🧟') && !line.startsWith('🎬') &&
+          !line.startsWith('⭐') && line.length > 30) {
+        break;
+      }
+      // Stop if we hit language line (common language names)
+      if (line && (line.toLowerCase() === 'hindi' || line.toLowerCase() === 'kannada' || 
+          line.toLowerCase() === 'english' || line.toLowerCase() === 'tamil' ||
+          line.toLowerCase() === 'telugu' || line.toLowerCase() === 'malayalam')) {
+        break;
+      }
+      genreLines.push(line);
+      currentIndex++;
+    }
+    
+    // Join genre lines and split by # to keep emojis attached
+    const genreText = genreLines.join(' ');
+    const genres = genreText.match(/#[^#]+/g)?.map(g => g.trim()) || [];
+    
+    // Remaining lines
+    let plot = lines[currentIndex] || '';
+    let language = lines[currentIndex + 1] || '';
+    let quality = lines[currentIndex + 2] || '';
+    let streamLink = lines[currentIndex + 3] || '';
+    let telegramLink = lines[currentIndex + 4] || '';
+    
+    // If plot seems too short, combine more lines
+    if (plot.length < 20 && lines[currentIndex + 5]) {
+      plot = plot + ' ' + lines[currentIndex + 5];
+    }
+    
+    return {
+      section,
+      movie: {
+        title,
+        year,
+        poster,
+        rating,
+        duration,
+        director,
+        genres,
+        plot,
+        language: language.split(",").map(l => l.trim()),
+        quality,
+        streamLink,
+        telegramLink
+      }
+    };
+  }
+
   // Handle edited posts
   if (body.edited_channel_post) {
     let lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-    if (lines.length < 13) return res.status(200).send("OK");
+    if (lines.length < 8) return res.status(200).send("OK");
 
     let section = lines[0].toLowerCase();
     if (section === "webseries") section = "webSeries";
@@ -115,25 +187,14 @@ export default async function handler(req, res) {
     let item = db[section]?.find(m => m.messageId === messageId);
     if (!item) return res.status(200).send("OK");
 
-    let newTitle = processEmojis(lines[1]);
+    let parsed = parseMovieMessage(lines, true);
+    if (!parsed) return res.status(200).send("OK");
+
+    let newTitle = parsed.movie.title;
     let duplicate = findDuplicate(newTitle, messageId);
     if (duplicate) return res.status(200).send("OK");
 
-    Object.assign(item, {
-      title: newTitle,
-      year: lines[2],
-      poster: lines[3],
-      rating: processEmojis(lines[4]),
-      duration: lines[5],
-      director: lines[6],
-      genres: lines[7].split(/#+/).filter(g => g.trim()).map(g => '#' + g.trim()),
-      plot: lines[8],
-      language: lines[9].split(",").map(l => l.trim()),
-      quality: lines[10],
-      streamLink: lines[11],
-      telegramLink: lines[12]
-    });
-
+    Object.assign(item, parsed.movie);
     await updateDB(db);
     return res.status(200).send("OK");
   }
@@ -141,42 +202,26 @@ export default async function handler(req, res) {
   // Handle new posts
   if (!text.startsWith("/")) {
     let lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-    if (lines.length < 13) return res.status(200).send("OK");
+    if (lines.length < 8) return res.status(200).send("OK");
 
-    let section = lines[0].toLowerCase();
-    if (section === "webseries") section = "webSeries";
+    let parsed = parseMovieMessage(lines);
+    if (!parsed) return res.status(200).send("OK");
 
-    if (!["popular", "webSeries", "upcoming"].includes(section)) {
-      return res.status(200).send("OK");
-    }
-
-    let title = processEmojis(lines[1]);
+    let title = parsed.movie.title;
     let duplicate = findDuplicate(title);
     if (duplicate) return res.status(200).send("OK");
 
-    if (!db[section]) db[section] = [];
+    if (!db[parsed.section]) db[parsed.section] = [];
 
     let movie = {
       messageId: messageId,
-      title: title,
-      year: lines[2],
-      poster: lines[3],
-      rating: processEmojis(lines[4]),
-      duration: lines[5],
-      director: lines[6],
-      genres: lines[7].match(/#[^#]+/g).map(g => g.trim()),
-      plot: lines[8],
-      language: lines[9].split(",").map(l => l.trim()),
-      quality: lines[10],
-      streamLink: lines[11],
-      telegramLink: lines[12],
+      ...parsed.movie,
       addedAt: Date.now()
     };
 
-    db[section].unshift(movie);
+    db[parsed.section].unshift(movie);
     await updateDB(db);
     
-    // Add delete button as a reply to the original message
     const inlineKeyboard = {
       inline_keyboard: [[
         {
@@ -207,16 +252,14 @@ export default async function handler(req, res) {
 
     let found = false;
     let foundMessageId = null;
-    let foundChatId = chatId;
     
     for (let sec of sections) {
       if (!db[sec]) continue;
-      let before = db[sec].length;
       let itemToDelete = db[sec].find(m => normalize(m.title) === normalize(name));
       if (itemToDelete) {
         foundMessageId = itemToDelete.messageId;
         db[sec] = db[sec].filter(m => normalize(m.title) !== normalize(name));
-        if (db[sec].length !== before) found = true;
+        found = true;
         break;
       }
     }
@@ -225,7 +268,6 @@ export default async function handler(req, res) {
     
     await updateDB(db);
     
-    // Try to delete the original message
     if (foundMessageId) {
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/deleteMessage`, {
         method: "POST",
@@ -237,7 +279,6 @@ export default async function handler(req, res) {
       }).catch(err => console.error("Error deleting message:", err));
     }
     
-    // Send confirmation
     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
