@@ -96,7 +96,6 @@
       padding: 10px 16px 10px 38px;
       border-radius: 60px;
       border: 1px solid #e2e8f0;
-      background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%2394a3b8" stroke-width="2"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>') no-repeat 14px center;
       background-size: 16px;
       font-size: .9rem;
       width: 130px;
@@ -730,6 +729,163 @@
       width: min(450px, 94vw);
       border-radius: 28px;
     }
+
+    .search-wrapper {
+      position: relative;
+    }
+
+    #searchIconBtn {
+      background: #f0f0f0;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+    }
+
+    body.dark-mode #searchIconBtn {
+      background: #334155;
+      color: white;
+    }
+
+    #searchPanel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: white;
+      z-index: 2000;
+      padding: 60px 20px 20px;
+      overflow-y: auto;
+    }
+
+    body.dark-mode #searchPanel {
+      background: #1a1a2e;
+    }
+
+    .search-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      padding: 15px;
+      background: white;
+      gap: 10px;
+      z-index: 2001;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    body.dark-mode .search-header {
+      background: #1a1a2e;
+      border-bottom-color: #334155;
+    }
+
+    #searchInput {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 30px;
+      border: 1px solid #e2e8f0;
+      font-size: 16px;
+    }
+
+    #closeSearchBtn {
+      background: #f0f0f0;
+      border: none;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    body.dark-mode #closeSearchBtn {
+      background: #334155;
+      color: white;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 20px 0 10px;
+      padding-bottom: 5px;
+      border-bottom: 2px solid #00c6ff;
+    }
+
+    .history-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .history-item {
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .history-item:hover {
+      background: #f5f5f5;
+    }
+
+    body.dark-mode .history-item {
+      border-bottom-color: #334155;
+    }
+
+    body.dark-mode .history-item:hover {
+      background: #334155;
+    }
+
+    .clear-history {
+      color: #ff4757;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 5px 10px;
+    }
+
+    .movies-suggestions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    .suggestion-card {
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .suggestion-card img {
+      width: 100%;
+      border-radius: 8px;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+    }
+
+    .suggestion-card .title {
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .rating-badge {
+      background: #ffc107;
+      color: #000;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: bold;
+      display: inline-block;
+      margin-top: 3px;
+    }
+
+    .bottomnav {
+      transition: display 0.3s ease;
+    }
   </style>
 </head>
 
@@ -739,7 +895,19 @@
       <div class="logo-circle"></div>
       <div class="logo-text">Cinemaniacs Hub</div>
     </div>
-    <div class="header-right"><input type="text" id="searchInput" placeholder="Search..."><button id="themeToggle">🌙</button></div>
+    <div class="header-right">
+      <div class="search-wrapper">
+        <button id="searchIconBtn">🔍</button>
+        <div id="searchPanel" style="display: none;">
+          <div class="search-header">
+            <input type="text" id="searchInput" placeholder="Search Movies & Series...">
+            <button id="closeSearchBtn">✕</button>
+          </div>
+          <div id="searchContent"></div>
+        </div>
+      </div>
+      <button id="themeToggle">🌙</button>
+    </div>
   </div>
   <div id="homepageContent">
     <div class="banner-container">
@@ -1051,6 +1219,21 @@
         div.innerHTML = `<div class="banner-content"><h1>${s.title}</h1><p>${s.year} • ${s.type}</p><button class="banner-watch-btn" data-title="${s.title}">Watch Now</button></div>`;
         container.appendChild(div);
       });
+      // Add click handlers for banner watch buttons
+      document.querySelectorAll('.banner-watch-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          let title = btn.getAttribute('data-title');
+          // Find the movie in all sections
+          let allMovies = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries, ...movieData.bannerSlides];
+          let movie = allMovies.find(m => m.title === title);
+          if (movie) {
+            openModal(movie);
+          } else {
+            showToast('Movie details not found');
+          }
+        });
+      });
       let total = slides.length;
       container.appendChild(container.children[0].cloneNode(true));
       container.insertBefore(container.children[total - 1].cloneNode(true), container.children[0]);
@@ -1123,40 +1306,295 @@
     }
 
     function initSearch() {
-      let input = document.getElementById('searchInput'),
-        home = document.getElementById('homepageContent'),
-        searchCont = document.getElementById('searchResultsContainer'),
-        grid = document.getElementById('searchResultsGrid');
-      input.addEventListener('input', function() {
-        let val = this.value.toLowerCase().trim();
-        if (val !== '') {
-          window.history.pushState({
-            type: 'search',
-            query: val
-          }, '', `?search=${val}`);
+      let searchIcon = document.getElementById('searchIconBtn');
+      let searchPanel = document.getElementById('searchPanel');
+      let closeBtn = document.getElementById('closeSearchBtn');
+      let searchInput = document.getElementById('searchInput');
+      let searchContent = document.getElementById('searchContent');
+      // Check if elements exist
+      if (!searchIcon || !searchPanel || !closeBtn || !searchInput || !searchContent) {
+        console.error('Search elements not found');
+        return;
+      }
+      // Search history with counts
+      let searchHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      let searchCounts = JSON.parse(localStorage.getItem('searchCounts') || '{}');
+
+      function saveHistory(query) {
+        if (!query.trim()) return;
+        // Update search counts
+        searchCounts[query] = (searchCounts[query] || 0) + 1;
+        localStorage.setItem('searchCounts', JSON.stringify(searchCounts));
+        // Update history (keep last 10 unique)
+        searchHistory = [query, ...searchHistory.filter(h => h !== query)].slice(0, 10);
+        localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+      }
+
+      function getTopSearched() {
+        let sorted = Object.entries(searchCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 3)
+          .map(item => item[0]);
+        return sorted;
+      }
+
+      function renderSearchPanel() {
+        let allMovies = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
+        // Get top rated movies (9+)
+        let topRated = allMovies.filter(m => parseFloat(m.rating) >= 9.0).slice(0, 6);
+        // Get recently added movies (last 6)
+        let recentlyAdded = [...allMovies]
+          .sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0))
+          .slice(0, 6);
+        let topSearched = getTopSearched();
+        let html = '';
+        // Top 3 Most Searched section
+        if (topSearched.length > 0) {
+          html += `
+        <div>
+          <div class="section-title">🔥 Most Searched</div>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;">
+            ${topSearched.map(query => `
+              <button class="history-btn" data-query="${query}" style="padding:8px 16px; border-radius:30px; background:linear-gradient(45deg,#ff416c,#ff4b2b); color:white; border:none; cursor:pointer; font-size:14px;">
+                🔥 ${query}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
         }
-        if (val === '') {
-          resetURL(); // 🔥 clear ?search=
-          home.style.display = 'block';
-          searchCont.style.display = 'none';
-          return;
+        // Recent searches section - as buttons
+        if (searchHistory.length > 0) {
+          html += `
+        <div>
+          <div class="section-title">
+            📜 Recent Searches
+            <span class="clear-history" style="float:right;cursor:pointer;color:#ff4757;font-size:12px;">Clear All</span>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;">
+            ${searchHistory.map(h => `
+              <button class="history-btn" data-query="${h}" style="padding:8px 16px; border-radius:30px; background:linear-gradient(45deg,#00c6ff,#0072ff); color:white; border:none; cursor:pointer; font-size:14px;">
+                🔍 ${h}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
         }
-        home.style.display = 'none';
-        searchCont.style.display = 'block';
-        let all = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
-        let matches = all.filter(m => m.title.toLowerCase().includes(val));
-        grid.innerHTML = '';
-        if (!matches.length) {
-          grid.innerHTML = '<div class="no-results">No results found</div>';
-          return;
+        // Recently Added - 2 rows layout (3+3)
+        if (recentlyAdded.length > 0) {
+          let firstRow = recentlyAdded.slice(0, 3);
+          let secondRow = recentlyAdded.slice(3, 6);
+          html += `
+        <div>
+          <div class="section-title">🆕 Recently Added</div>
+          <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+            <!-- Row 1 -->
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
+              ${firstRow.map(m => `
+                <div class="suggestion-item" data-title="${m.title}" style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:8px; border-radius:12px; background:#f5f5f5;">
+                  <img src="${m.poster}" style="width:40px; height:60px; object-fit:cover; border-radius:8px;" onerror="this.src='https://via.placeholder.com/40x60?text=No+Image'">
+                  <div style="flex:1;">
+                    <div style="font-weight:bold; font-size:14px;">${m.title}</div>
+                    <div style="font-size:11px; color:#666;">${m.year}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            <!-- Row 2 -->
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
+              ${secondRow.map(m => `
+                <div class="suggestion-item" data-title="${m.title}" style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:8px; border-radius:12px; background:#f5f5f5;">
+                  <img src="${m.poster}" style="width:40px; height:60px; object-fit:cover; border-radius:8px;" onerror="this.src='https://via.placeholder.com/40x60?text=No+Image'">
+                  <div style="flex:1;">
+                    <div style="font-weight:bold; font-size:14px;">${m.title}</div>
+                    <div style="font-size:11px; color:#666;">${m.year}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
         }
-        matches.forEach(m => {
-          let card = document.createElement('div');
-          card.className = 'search-result-card';
-          card.innerHTML = `<img src="${m.poster}" onerror="this.src='https://via.placeholder.com/120x180?text=No+Image'"><div class="title">${m.title}<br><span class="year">(${m.year})</span></div>`;
-          card.addEventListener('click', () => openModal(m));
-          grid.appendChild(card);
+        // Top Rated - 2 rows layout (3+3)
+        if (topRated.length > 0) {
+          let firstRow = topRated.slice(0, 3);
+          let secondRow = topRated.slice(3, 6);
+          html += `
+        <div>
+          <div class="section-title">⭐ Top Rated (9.0+)</div>
+          <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+            <!-- Row 1 -->
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
+              ${firstRow.map(m => `
+                <div class="suggestion-item" data-title="${m.title}" style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:8px; border-radius:12px; background:#f5f5f5;">
+                  <img src="${m.poster}" style="width:40px; height:60px; object-fit:cover; border-radius:8px;" onerror="this.src='https://via.placeholder.com/40x60?text=No+Image'">
+                  <div style="flex:1;">
+                    <div style="font-weight:bold; font-size:14px;">${m.title}</div>
+                    <div style="font-size:11px; color:#666;">${m.year}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            <!-- Row 2 -->
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
+              ${secondRow.map(m => `
+                <div class="suggestion-item" data-title="${m.title}" style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:8px; border-radius:12px; background:#f5f5f5;">
+                  <img src="${m.poster}" style="width:40px; height:60px; object-fit:cover; border-radius:8px;" onerror="this.src='https://via.placeholder.com/40x60?text=No+Image'">
+                  <div style="flex:1;">
+                    <div style="font-weight:bold; font-size:14px;">${m.title}</div>
+                    <div style="font-size:11px; color:#666;">${m.year}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+        }
+        if (html === '') {
+          html = '<div style="text-align:center;padding:40px;">No movies available</div>';
+        }
+        searchContent.innerHTML = html;
+        // Add dark mode support for suggestion items
+        if (document.body.classList.contains('dark-mode')) {
+          document.querySelectorAll('.suggestion-item').forEach(item => {
+            item.style.background = '#334155';
+            item.querySelectorAll('div div:last-child').forEach(el => {
+              el.style.color = '#ccc';
+            });
+          });
+        }
+        // Add click handlers for history buttons
+        document.querySelectorAll('.history-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            let query = btn.getAttribute('data-query');
+            searchInput.value = query;
+            performSearch(query);
+          });
         });
+        // Clear history button
+        let clearBtn = document.querySelector('.clear-history');
+        if (clearBtn) {
+          clearBtn.addEventListener('click', () => {
+            searchHistory = [];
+            searchCounts = {};
+            localStorage.setItem('searchHistory', '[]');
+            localStorage.setItem('searchCounts', '{}');
+            renderSearchPanel();
+          });
+        }
+        // Add click handlers for suggestion items
+        document.querySelectorAll('.suggestion-item').forEach(item => {
+          item.addEventListener('click', () => {
+            let title = item.getAttribute('data-title');
+            let movie = allMovies.find(m => m.title === title);
+            if (movie) {
+              saveHistory(title);
+              closeSearch();
+              openModal(movie);
+            }
+          });
+        });
+      }
+
+      function performSearch(query) {
+        if (!query.trim()) {
+          renderSearchPanel();
+          return;
+        }
+        saveHistory(query);
+        let allMovies = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
+        let results = allMovies.filter(m => m.title.toLowerCase().includes(query.toLowerCase()));
+        if (results.length === 0) {
+          searchContent.innerHTML = `<div style="text-align:center;padding:40px;">❌ No results found for "${query}"</div>`;
+          return;
+        }
+        // Search results - 2 rows layout
+        let firstRow = results.slice(0, 3);
+        let secondRow = results.slice(3, 6);
+        searchContent.innerHTML = `
+      <div class="section-title">🔍 Search Results for "${query}" (${results.length})</div>
+      <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+        <!-- Row 1 -->
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
+          ${firstRow.map(m => `
+            <div class="search-item" data-title="${m.title}" style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:8px; border-radius:12px; background:#f5f5f5;">
+              <img src="${m.poster}" style="width:40px; height:60px; object-fit:cover; border-radius:8px;" onerror="this.src='https://via.placeholder.com/40x60?text=No+Image'">
+              <div style="flex:1;">
+                <div style="font-weight:bold; font-size:14px;">${m.title}</div>
+                <div style="font-size:11px; color:#666;">${m.year}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <!-- Row 2 -->
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
+          ${secondRow.map(m => `
+            <div class="search-item" data-title="${m.title}" style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:8px; border-radius:12px; background:#f5f5f5;">
+              <img src="${m.poster}" style="width:40px; height:60px; object-fit:cover; border-radius:8px;" onerror="this.src='https://via.placeholder.com/40x60?text=No+Image'">
+              <div style="flex:1;">
+                <div style="font-weight:bold; font-size:14px;">${m.title}</div>
+                <div style="font-size:11px; color:#666;">${m.year}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+        // Add dark mode support for search items
+        if (document.body.classList.contains('dark-mode')) {
+          document.querySelectorAll('.search-item').forEach(item => {
+            item.style.background = '#334155';
+            item.querySelectorAll('div div:last-child').forEach(el => {
+              el.style.color = '#ccc';
+            });
+          });
+        }
+        document.querySelectorAll('.search-item').forEach(item => {
+          item.addEventListener('click', () => {
+            let title = item.getAttribute('data-title');
+            let movie = allMovies.find(m => m.title === title);
+            if (movie) {
+              closeSearch();
+              openModal(movie);
+            }
+          });
+        });
+      }
+
+      function openSearch() {
+        searchPanel.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        // Hide bottom nav
+        let bottomNav = document.querySelector('.bottomnav');
+        if (bottomNav) bottomNav.style.display = 'none';
+        renderSearchPanel();
+        searchInput.value = '';
+        searchInput.focus();
+      }
+
+      function closeSearch() {
+        searchPanel.style.display = 'none';
+        document.body.style.overflow = '';
+        // Show bottom nav again
+        let bottomNav = document.querySelector('.bottomnav');
+        if (bottomNav) bottomNav.style.display = 'flex';
+      }
+      // Add click event to search icon
+      searchIcon.addEventListener('click', openSearch);
+      // Add click event to close button
+      closeBtn.addEventListener('click', closeSearch);
+      // Add input event for search
+      searchInput.addEventListener('input', (e) => {
+        performSearch(e.target.value);
+      });
+      // Close on escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && searchPanel.style.display === 'block') {
+          closeSearch();
+        }
       });
     }
 
