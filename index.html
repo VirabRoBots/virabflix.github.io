@@ -981,6 +981,8 @@
     </div>
   </div>
   <script>
+    let previousState = null; // Track 'search' or 'home'
+    let lastSearchQuery = ''; // Store last search text
     let loadingTimer = null;
     let loadingCancelled = false;
 
@@ -1311,7 +1313,6 @@
       let closeBtn = document.getElementById('closeSearchBtn');
       let searchInput = document.getElementById('searchInput');
       let searchContent = document.getElementById('searchContent');
-      // Check if elements exist
       if (!searchIcon || !searchPanel || !closeBtn || !searchInput || !searchContent) {
         console.error('Search elements not found');
         return;
@@ -1322,10 +1323,8 @@
 
       function saveHistory(query) {
         if (!query.trim()) return;
-        // Update search counts
         searchCounts[query] = (searchCounts[query] || 0) + 1;
         localStorage.setItem('searchCounts', JSON.stringify(searchCounts));
-        // Update history (keep last 10 unique)
         searchHistory = [query, ...searchHistory.filter(h => h !== query)].slice(0, 10);
         localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
       }
@@ -1338,126 +1337,72 @@
         return sorted;
       }
 
+      function renderMovieItem(m) {
+        return `
+            <div class="suggestion-item" data-title="${m.title}" style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:8px; border-radius:12px; background:#f5f5f5;">
+                <img src="${m.poster}" style="width:40px; height:60px; object-fit:cover; border-radius:8px;" onerror="this.src='https://via.placeholder.com/40x60?text=No+Image'">
+                <div style="flex:1;">
+                    <div style="font-weight:bold; font-size:14px;">${m.title}</div>
+                    <div style="font-size:11px; color:#666;">${m.year}</div>
+                </div>
+            </div>
+        `;
+      }
+
       function renderSearchPanel() {
         let allMovies = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
-        // Get top rated movies (9+)
         let topRated = allMovies.filter(m => parseFloat(m.rating) >= 9.0).slice(0, 6);
-        // Get recently added movies (last 6)
-        let recentlyAdded = [...allMovies]
-          .sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0))
-          .slice(0, 6);
+        let recentlyAdded = [...allMovies].sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0)).slice(0, 6);
         let topSearched = getTopSearched();
         let html = '';
-        // Top 3 Most Searched section
         if (topSearched.length > 0) {
           html += `
-        <div>
-          <div class="section-title">🔥 Most Searched</div>
-          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;">
-            ${topSearched.map(query => `
-              <button class="history-btn" data-query="${query}" style="padding:8px 16px; border-radius:30px; background:linear-gradient(45deg,#ff416c,#ff4b2b); color:white; border:none; cursor:pointer; font-size:14px;">
-                🔥 ${query}
-              </button>
-            `).join('')}
-          </div>
-        </div>
-      `;
+                <div>
+                    <div class="section-title">🔥 Most Searched</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;">
+                        ${topSearched.map(query => `
+                            <button class="history-btn" data-query="${query}" style="padding:8px 16px; border-radius:30px; background:linear-gradient(45deg,#ff416c,#ff4b2b); color:white; border:none; cursor:pointer; font-size:14px;"> 🔥 ${query} </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
         }
-        // Recent searches section - as buttons
         if (searchHistory.length > 0) {
           html += `
-        <div>
-          <div class="section-title">
-            📜 Recent Searches
-            <span class="clear-history" style="float:right;cursor:pointer;color:#ff4757;font-size:12px;">Clear All</span>
-          </div>
-          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;">
-            ${searchHistory.map(h => `
-              <button class="history-btn" data-query="${h}" style="padding:8px 16px; border-radius:30px; background:linear-gradient(45deg,#00c6ff,#0072ff); color:white; border:none; cursor:pointer; font-size:14px;">
-                🔍 ${h}
-              </button>
-            `).join('')}
-          </div>
-        </div>
-      `;
+                <div>
+                    <div class="section-title">📜 Recent Searches <span class="clear-history" style="float:right;cursor:pointer;color:#ff4757;font-size:12px;">Clear All</span></div>
+                    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;">
+                        ${searchHistory.map(h => `
+                            <button class="history-btn" data-query="${h}" style="padding:8px 16px; border-radius:30px; background:linear-gradient(45deg,#00c6ff,#0072ff); color:white; border:none; cursor:pointer; font-size:14px;"> 🔍 ${h} </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
         }
-        // Recently Added - 2 rows layout (3+3)
         if (recentlyAdded.length > 0) {
-          let firstRow = recentlyAdded.slice(0, 3);
-          let secondRow = recentlyAdded.slice(3, 6);
           html += `
-        <div>
-          <div class="section-title">🆕 Recently Added</div>
-          <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
-            <!-- Row 1 -->
-            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
-              ${firstRow.map(m => `
-                <div class="suggestion-item" data-title="${m.title}" style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:8px; border-radius:12px; background:#f5f5f5;">
-                  <img src="${m.poster}" style="width:40px; height:60px; object-fit:cover; border-radius:8px;" onerror="this.src='https://via.placeholder.com/40x60?text=No+Image'">
-                  <div style="flex:1;">
-                    <div style="font-weight:bold; font-size:14px;">${m.title}</div>
-                    <div style="font-size:11px; color:#666;">${m.year}</div>
-                  </div>
+                <div>
+                    <div class="section-title">🆕 Recently Added</div>
+                    <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; margin-top:10px;">
+                        ${recentlyAdded.map(m => renderMovieItem(m)).join('')}
+                    </div>
                 </div>
-              `).join('')}
-            </div>
-            <!-- Row 2 -->
-            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
-              ${secondRow.map(m => `
-                <div class="suggestion-item" data-title="${m.title}" style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:8px; border-radius:12px; background:#f5f5f5;">
-                  <img src="${m.poster}" style="width:40px; height:60px; object-fit:cover; border-radius:8px;" onerror="this.src='https://via.placeholder.com/40x60?text=No+Image'">
-                  <div style="flex:1;">
-                    <div style="font-weight:bold; font-size:14px;">${m.title}</div>
-                    <div style="font-size:11px; color:#666;">${m.year}</div>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        </div>
-      `;
+            `;
         }
-        // Top Rated - 2 rows layout (3+3)
         if (topRated.length > 0) {
-          let firstRow = topRated.slice(0, 3);
-          let secondRow = topRated.slice(3, 6);
           html += `
-        <div>
-          <div class="section-title">⭐ Top Rated (9.0+)</div>
-          <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
-            <!-- Row 1 -->
-            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
-              ${firstRow.map(m => `
-                <div class="suggestion-item" data-title="${m.title}" style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:8px; border-radius:12px; background:#f5f5f5;">
-                  <img src="${m.poster}" style="width:40px; height:60px; object-fit:cover; border-radius:8px;" onerror="this.src='https://via.placeholder.com/40x60?text=No+Image'">
-                  <div style="flex:1;">
-                    <div style="font-weight:bold; font-size:14px;">${m.title}</div>
-                    <div style="font-size:11px; color:#666;">${m.year}</div>
-                  </div>
+                <div>
+                    <div class="section-title">⭐ Top Rated (9.0+)</div>
+                    <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; margin-top:10px;">
+                        ${topRated.map(m => renderMovieItem(m)).join('')}
+                    </div>
                 </div>
-              `).join('')}
-            </div>
-            <!-- Row 2 -->
-            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
-              ${secondRow.map(m => `
-                <div class="suggestion-item" data-title="${m.title}" style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:8px; border-radius:12px; background:#f5f5f5;">
-                  <img src="${m.poster}" style="width:40px; height:60px; object-fit:cover; border-radius:8px;" onerror="this.src='https://via.placeholder.com/40x60?text=No+Image'">
-                  <div style="flex:1;">
-                    <div style="font-weight:bold; font-size:14px;">${m.title}</div>
-                    <div style="font-size:11px; color:#666;">${m.year}</div>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        </div>
-      `;
+            `;
         }
         if (html === '') {
           html = '<div style="text-align:center;padding:40px;">No movies available</div>';
         }
         searchContent.innerHTML = html;
-        // Add dark mode support for suggestion items
         if (document.body.classList.contains('dark-mode')) {
           document.querySelectorAll('.suggestion-item').forEach(item => {
             item.style.background = '#334155';
@@ -1466,7 +1411,6 @@
             });
           });
         }
-        // Add click handlers for history buttons
         document.querySelectorAll('.history-btn').forEach(btn => {
           btn.addEventListener('click', () => {
             let query = btn.getAttribute('data-query');
@@ -1474,7 +1418,6 @@
             performSearch(query);
           });
         });
-        // Clear history button
         let clearBtn = document.querySelector('.clear-history');
         if (clearBtn) {
           clearBtn.addEventListener('click', () => {
@@ -1485,7 +1428,6 @@
             renderSearchPanel();
           });
         }
-        // Add click handlers for suggestion items
         document.querySelectorAll('.suggestion-item').forEach(item => {
           item.addEventListener('click', () => {
             let title = item.getAttribute('data-title');
@@ -1504,59 +1446,40 @@
           renderSearchPanel();
           return;
         }
-        saveHistory(query);
         let allMovies = [...movieData.popular, ...movieData.upcoming, ...movieData.webSeries];
         let results = allMovies.filter(m => m.title.toLowerCase().includes(query.toLowerCase()));
         if (results.length === 0) {
           searchContent.innerHTML = `<div style="text-align:center;padding:40px;">❌ No results found for "${query}"</div>`;
           return;
         }
-        // Search results - 2 rows layout
-        let firstRow = results.slice(0, 3);
-        let secondRow = results.slice(3, 6);
+        // Display results in grid with same size as popular movies
         searchContent.innerHTML = `
-      <div class="section-title">🔍 Search Results for "${query}" (${results.length})</div>
-      <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
-        <!-- Row 1 -->
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
-          ${firstRow.map(m => `
-            <div class="search-item" data-title="${m.title}" style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:8px; border-radius:12px; background:#f5f5f5;">
-              <img src="${m.poster}" style="width:40px; height:60px; object-fit:cover; border-radius:8px;" onerror="this.src='https://via.placeholder.com/40x60?text=No+Image'">
-              <div style="flex:1;">
-                <div style="font-weight:bold; font-size:14px;">${m.title}</div>
-                <div style="font-size:11px; color:#666;">${m.year}</div>
-              </div>
-            </div>
-          `).join('')}
+        <div class="section-title">🔍 Search Results for "${query}" (${results.length})</div>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:15px; margin-top:10px;">
+            ${results.map(m => `
+                <div class="search-result-card-fixed" data-title="${m.title}" style="text-align:center; cursor:pointer;">
+                    <img src="${m.poster}" style="width:120px; height:180px; border-radius:8px; object-fit:cover;" onerror="this.src='https://via.placeholder.com/120x180?text=No+Image'">
+                    <div class="title" style="font-size:12px; margin-top:5px; font-weight:500;">${m.title}<br><span class="year" style="font-size:10px; color:#666;">(${m.year})</span></div>
+                </div>
+            `).join('')}
         </div>
-        <!-- Row 2 -->
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
-          ${secondRow.map(m => `
-            <div class="search-item" data-title="${m.title}" style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:8px; border-radius:12px; background:#f5f5f5;">
-              <img src="${m.poster}" style="width:40px; height:60px; object-fit:cover; border-radius:8px;" onerror="this.src='https://via.placeholder.com/40x60?text=No+Image'">
-              <div style="flex:1;">
-                <div style="font-weight:bold; font-size:14px;">${m.title}</div>
-                <div style="font-size:11px; color:#666;">${m.year}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
     `;
-        // Add dark mode support for search items
+        // Dark mode support
         if (document.body.classList.contains('dark-mode')) {
-          document.querySelectorAll('.search-item').forEach(item => {
-            item.style.background = '#334155';
-            item.querySelectorAll('div div:last-child').forEach(el => {
-              el.style.color = '#ccc';
-            });
+          document.querySelectorAll('.search-result-card-fixed .year').forEach(el => {
+            el.style.color = '#ccc';
+          });
+          document.querySelectorAll('.search-result-card-fixed .title').forEach(el => {
+            el.style.color = '#fff';
           });
         }
-        document.querySelectorAll('.search-item').forEach(item => {
-          item.addEventListener('click', () => {
-            let title = item.getAttribute('data-title');
+        // Add click handlers
+        document.querySelectorAll('.search-result-card-fixed').forEach(card => {
+          card.addEventListener('click', () => {
+            let title = card.getAttribute('data-title');
             let movie = allMovies.find(m => m.title === title);
             if (movie) {
+              saveHistory(title);
               closeSearch();
               openModal(movie);
             }
@@ -1565,32 +1488,74 @@
       }
 
       function openSearch() {
+        previousState = 'search';
         searchPanel.style.display = 'block';
         document.body.style.overflow = 'hidden';
-        // Hide bottom nav
         let bottomNav = document.querySelector('.bottomnav');
         if (bottomNav) bottomNav.style.display = 'none';
         renderSearchPanel();
-        searchInput.value = '';
+        searchInput.value = lastSearchQuery;
+        if (lastSearchQuery) {
+          performSearch(lastSearchQuery);
+        }
         searchInput.focus();
       }
 
       function closeSearch() {
+        lastSearchQuery = searchInput.value.trim();
         searchPanel.style.display = 'none';
         document.body.style.overflow = '';
-        // Show bottom nav again
         let bottomNav = document.querySelector('.bottomnav');
         if (bottomNav) bottomNav.style.display = 'flex';
+        previousState = 'home';
       }
-      // Add click event to search icon
-      searchIcon.addEventListener('click', openSearch);
-      // Add click event to close button
-      closeBtn.addEventListener('click', closeSearch);
-      // Add input event for search
-      searchInput.addEventListener('input', (e) => {
-        performSearch(e.target.value);
+      // ========== THE FIX: Smart X button ==========
+      // One button that clears text if present, otherwise closes the panel
+      closeBtn.addEventListener('click', () => {
+        let currentText = searchInput.value;
+        if (currentText && currentText.trim().length > 0) {
+          // Case 1: Search has text -> clear it
+          searchInput.value = '';
+          renderSearchPanel(); // Show suggestions/history again
+          searchInput.focus();
+        } else {
+          // Case 2: Search is empty -> close the panel
+          closeSearch();
+        }
       });
-      // Close on escape key
+      // ============================================
+      searchIcon.addEventListener('click', openSearch);
+      searchInput.addEventListener('input', (e) => {
+        let query = e.target.value.trim();
+        if (query) {
+          performSearch(query);
+        } else {
+          renderSearchPanel();
+        }
+      });
+      // Close keyboard when pressing Enter key
+      searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault(); // Prevent any default form submission
+          searchInput.blur(); // This closes the keyboard on mobile
+          // Optional: If you want to keep the search results as they are
+          // Just blurring is enough to dismiss keyboard
+        }
+      });
+      // Close keyboard AND save history when pressing Enter key
+      searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault(); // Prevent any default form submission
+          let query = searchInput.value.trim();
+          if (query) {
+            // Save to history
+            saveHistory(query);
+            // Perform search and keep results
+            performSearch(query);
+          }
+          searchInput.blur(); // Close the keyboard
+        }
+      });
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && searchPanel.style.display === 'block') {
           closeSearch();
@@ -1725,9 +1690,8 @@
         document.querySelector('.bottomnav .menu[data-nav="home"]')?.classList.add('active-bar');
       }, 100);
     }
-    window.addEventListener('popstate', function() {
+    window.addEventListener('popstate', function(event) {
       let loading = document.getElementById('loadingOverlay');
-      // ✅ STOP redirect when back pressed
       if (loading) {
         loadingCancelled = true;
         clearInterval(loadingTimer);
@@ -1737,9 +1701,15 @@
       let movieModal = document.getElementById('movieModal');
       let langModal = document.getElementById('languageModal');
       let requestModal = document.getElementById('requestModal');
+      let searchPanel = document.getElementById('searchPanel');
+      // If modal is open, close it and restore previous view
       if (movieModal?.classList.contains('show')) {
         movieModal.classList.remove('show');
         document.body.classList.remove('modal-open');
+        // Restore search if that's where we came from
+        if (previousState === 'search' && searchPanel.style.display !== 'block') {
+          openSearch();
+        }
         return;
       }
       if (langModal?.classList.contains('show')) {
@@ -1752,6 +1722,12 @@
         document.body.classList.remove('modal-open');
         return;
       }
+      // If search panel is open, close it
+      if (searchPanel?.style.display === 'block') {
+        closeSearch();
+        return;
+      }
+      // Otherwise show homepage
       document.getElementById('homepageContent').style.display = 'block';
       document.getElementById('searchResultsContainer').style.display = 'none';
     });
